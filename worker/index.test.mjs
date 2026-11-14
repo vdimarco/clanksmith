@@ -7,7 +7,7 @@ const env = {
     fetch(request) {
       const path = new URL(request.url).pathname;
       const status = path === "/missing" ? 404 : 200;
-      const type = path.startsWith("/fonts/") ? "font/woff2" : "text/html; charset=utf-8";
+      const type = path.startsWith("/fonts/") ? "font/woff2" : path.endsWith(".css") ? "text/css; charset=utf-8" : "text/html; charset=utf-8";
       return new Response(status === 404 ? "missing" : "ok", { status, headers: { "content-type": type } });
     },
   },
@@ -23,6 +23,7 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
 
   const board = await get("https://clanksmith.com/board/");
   assert.match(board.headers.get("content-security-policy"), /connect-src 'self' https:;/);
+  assert.equal((await get("https://clanksmith.com/board/board.css")).headers.get("cache-control"), "public, max-age=300");
   assert.equal((await get("https://clanksmith.com/fonts/outfit-400.woff2")).headers.get("cache-control"), "public, max-age=31536000, immutable");
   assert.equal((await get("https://clanksmith.com/missing")).headers.get("cache-control"), "no-store");
 

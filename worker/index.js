@@ -24,7 +24,7 @@ const LOCAL = new Set(["localhost", "127.0.0.1"]);
 function cacheFor(pathname, status, type) {
   if (status !== 200) return "no-store";
   if (pathname.startsWith("/fonts/")) return "public, max-age=31536000, immutable";
-  if (/^(text\/html|text\/javascript|application\/json)/.test(type)) return "public, max-age=300";
+  if (/^(text\/html|text\/javascript|text\/css|application\/json)/.test(type)) return "public, max-age=300";
   return "public, max-age=86400";
 }
 
