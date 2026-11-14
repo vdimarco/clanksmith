@@ -30,14 +30,14 @@ Tools: `list_jobs`, `get_job`, `submit`, `status`. The server is a dry run unles
 
 The site and the relay are one Cloudflare Worker named `clanksmith`. That is the Worker already attached to `clanksmith.com`, `www.clanksmith.com`, and `clanksmith.vdimarco.workers.dev`. A deploy updates that Worker, so the custom domains stay on it.
 
-`site/public/` is the static site, served with Workers Static Assets. The homepage files are the live page. `site/src/worker.js` sends `www.clanksmith.com` to the apex with a 301, sends `/mcp` and `/mcp/` to the relay, and serves every other path from `site/public/`. Config is `site/wrangler.jsonc`. `workers_dev` stays true so the `workers.dev` hostname keeps working next to the custom domains.
+`site/` is the static site, served with Workers Static Assets. Those files are the live page. Cloudflare adds its analytics beacon when it serves the HTML. `worker/index.js` sends `www.clanksmith.com` and plain HTTP to `https://clanksmith.com` with a 301, sends `/mcp` and `/mcp/` to the relay, and serves every other path from `site/`. Config is `worker/wrangler.jsonc`. `workers_dev` stays true so the `workers.dev` hostname keeps working next to the custom domains. The `wrangler.jsonc` in the repository root is a different Worker, `clanksmith-mcp`, and this workflow does not deploy it.
 
 Market writes stay off. The config sets `CLANKSMITH_LIVE_WRITES` to `false` and `AGENT_MARKET_DRY_RUN` to `true`. Live writes need both switches changed in that file. A deploy writes those plain vars onto the Worker. `AGENT_MARKET_AGENT_TOKEN` and `AGENT_MARKET_BUYER_KEY` are Worker secrets. Put them on the Worker with `wrangler secret put` when you mean to. They are not in the repo, and a deploy does not delete secrets already stored on the Worker.
 
 GitHub Actions workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
 
-- On a pull request, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs site/src/route.test.mjs`, then `wrangler deploy --dry-run --config site/wrangler.jsonc`. The dry run builds the Worker and the asset manifest. It does not deploy, and it does not need the secrets below.
-- On a push to `main`, it runs those tests, then `wrangler deploy --config site/wrangler.jsonc` for Worker `clanksmith`.
+- On a pull request, and on a push to any branch other than `main`, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs worker/index.test.mjs`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest. It does not deploy, and it does not need the secrets below.
+- On a push to `main`, it runs those tests, then `wrangler deploy --config worker/wrangler.jsonc` for Worker `clanksmith`.
 
 Wrangler is the dev dependency pinned in `package.json` (4.162.0). The workflow installs from the lockfile and calls that binary.
 
@@ -59,7 +59,7 @@ Create the token on that same account. Scope it to this account, and scope the z
 | Permission | Scope | Why |
 | --- | --- | --- |
 | Workers Scripts Edit | Account | Deploy the existing `clanksmith` script, including static assets and the `ClanksmithRelay` Durable Object. In the newer roles list this is the Editor role at the Workers product scope. Custom domains do not support a per-Worker role, so grant it on the account. The Worker already exists, so the token does not need to create Workers. |
-| Workers Routes Edit | Zone `clanksmith.com` | Keep the custom domains in `site/wrangler.jsonc` attached on each deploy (`clanksmith.com` and `www.clanksmith.com`). The token form may label this Workers Routes Write. |
+| Workers Routes Edit | Zone `clanksmith.com` | Keep the custom domains in `worker/wrangler.jsonc` attached on each deploy (`clanksmith.com` and `www.clanksmith.com`). The token form may label this Workers Routes Write. |
 
 A custom domain writes its own DNS record. The token does not need a separate DNS permission.
 

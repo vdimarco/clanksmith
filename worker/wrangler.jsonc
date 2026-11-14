@@ -1,11 +1,11 @@
 {
   // Existing Worker for clanksmith.com and www.clanksmith.com.
   // Deploying this name updates that Worker, so the custom domains stay attached.
-  // src/worker.js sends www to the apex, sends /mcp to the relay, and serves ./public for every other path.
+  // index.js sends www and plain HTTP to the apex, sends /mcp to the relay, and serves ../site for every other path.
   // Market writes stay off unless CLANKSMITH_LIVE_WRITES is true and AGENT_MARKET_DRY_RUN is false.
   // AGENT_MARKET_AGENT_TOKEN and AGENT_MARKET_BUYER_KEY are secrets. Set them with `wrangler secret put`. They are not in this file.
   "name": "clanksmith",
-  "main": "src/worker.js",
+  "main": "./index.js",
   "compatibility_date": "2026-11-14",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
@@ -24,9 +24,8 @@
     "CLANKSMITH_LIVE_WRITES": "false"
   },
   "assets": {
-    "directory": "./public",
+    "directory": "../site",
     "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
     "run_worker_first": true
   },

@@ -15,10 +15,10 @@
     "verify:testnet": "node scripts/verify.mjs testnet",
     "test:mcp": "node test/mcp-read.test.mjs",
     "test:relay": "node relay/test/all.mjs",
-    "test:site": "node --test site/request.test.mjs site/src/route.test.mjs",
+    "test:site": "node --test site/request.test.mjs worker/index.test.mjs",
     "demo:relay": "node relay/demo.mjs",
-    "deploy:dry": "wrangler deploy --dry-run --config site/wrangler.jsonc",
-    "deploy": "wrangler deploy --config site/wrangler.jsonc"
+    "deploy:dry": "wrangler deploy --dry-run --config worker/wrangler.jsonc",
+    "deploy": "wrangler deploy --config worker/wrangler.jsonc"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

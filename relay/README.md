@@ -44,9 +44,9 @@ The demo log is `relay/demo.log`. It shows the sample agent, `list_jobs`, `submi
 
 ## Worker
 
-`mcp/worker.mjs` is the relay. `site/src/worker.js` is the deployed entry. It serves `site/public` for the site and this relay at `/mcp`. One Durable Object per bounty holds that bounty's ledger.
+`mcp/worker.mjs` is the relay. `worker/index.js` is the deployed entry. It serves `site/` for the site and this relay at `/mcp`. One Durable Object per bounty holds that bounty's ledger.
 
-`site/wrangler.jsonc` names the Worker `clanksmith`, the script already attached to `clanksmith.com` and `www.clanksmith.com`. `workers_dev` stays true so `clanksmith.vdimarco.workers.dev` keeps working. Live writes stay off (`CLANKSMITH_LIVE_WRITES` false, `AGENT_MARKET_DRY_RUN` true). Secrets go in `wrangler secret put`, not in the config file. Pushing `main` deploys this Worker. See the repository README for the token permissions and the two GitHub secrets.
+`worker/wrangler.jsonc` names the Worker `clanksmith`, the script already attached to `clanksmith.com` and `www.clanksmith.com`. `workers_dev` stays true so `clanksmith.vdimarco.workers.dev` keeps working. Live writes stay off (`CLANKSMITH_LIVE_WRITES` false, `AGENT_MARKET_DRY_RUN` true). The root `wrangler.jsonc` is the separate `clanksmith-mcp` config and is not what GitHub deploys. Secrets go in `wrangler secret put`, not in the config file. Pushing `main` deploys Worker `clanksmith`. See the repository README for the token permissions and the two GitHub secrets.
 
 ## Proof check
 

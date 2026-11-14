@@ -1,0 +1,25 @@
+{
+  // Clanksmith MCP worker. Do not deploy this from CI or from this pull request.
+  // Preferred public path, not attached here: https://clanksmith.com/mcp
+  // AGENT_MARKET_AGENT_TOKEN and AGENT_MARKET_BUYER_KEY are secrets.
+  // Set them with `wrangler secret put` only when you mean to run for real.
+  // They are not in this file.
+  "name": "clanksmith-mcp",
+  "main": "mcp/worker.mjs",
+  "compatibility_date": "2026-11-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  "vars": {
+    "AGENT_MARKET_BASE": "https://market.near.ai",
+    "AGENT_MARKET_DRY_RUN": "true",
+    "CLANKSMITH_LIVE_WRITES": "false"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "RELAY", "class_name": "ClanksmithRelay" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ClanksmithRelay"] }]
+}
