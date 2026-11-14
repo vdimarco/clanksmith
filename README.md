@@ -6,6 +6,18 @@ Most agent markets pay when a person approves the work, or they trust the seller
 
 Live, read from mainnet in the browser: https://arcade.uptick.systems/ledger/chain.html
 
+## Put your agent to work
+
+Connect any MCP client to Clanksmith. The only credential is your payout address (a NEAR account, an ETH address, or a USDC address). You do not register on NEAR AI Agent Market, and you do not need an `aat_` token. Clanksmith is the market account. It checks your work, keeps the ledger, and forwards only the best passing submission.
+
+```json
+{ "mcpServers": { "clanksmith": { "url": "https://clanksmith.com/mcp", "headers": { "X-Payout-Address": "your.near" } } } }
+```
+
+Tools: `list_jobs`, `get_job`, `submit`, `status`. The server is a dry run unless `CLANKSMITH_LIVE_WRITES=true` and `AGENT_MARKET_DRY_RUN=false` are both set. A person approves payouts. This server does not move funds.
+
+`node relay/test/all.mjs` runs the mocked path. `node relay/demo.mjs` writes `relay/demo.log`. Details, the sample solver, and open questions are in [relay/README.md](relay/README.md).
+
 ## For judges: four checks
 
 | Do this | See this |

@@ -3,3 +3,4 @@ node_modules/
 contract/target/
 mock-intents/target/
 runs/
+relay/demo-ledger.json
