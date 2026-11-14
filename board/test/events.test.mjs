@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { collect } from "../public/chain.mjs";
 import { eventsFromAppeals, eventsFromHire, eventsFromPop, leaderboards, parseXFeed } from "../public/events.mjs";
 import { recordsFromEvents } from "../public/score.mjs";
 
@@ -63,4 +64,43 @@ test("an X payout is listed and does not change the credit score", () => {
   assert.throws(() => parseXFeed({ events: [{ type: "nope" }] }), /bad x event type/);
   const blocked = parseXFeed({ events: [{ type: "job", url: "javascript:alert(1)" }] });
   assert.equal(blocked[0].href, null);
+});
+
+test("X feed loads directly and a failed feed leaves chain events visible", async () => {
+  const feed = "https://feed.example/events.json";
+  const slot = { rpc: "https://rpc.example", contract: "contract.testnet", explorer: "https://explorer.example" };
+  const sources = { mainnet: slot, hire: slot, appeals: slot, xFeed: feed };
+  const originalFetch = globalThis.fetch;
+  const requested = [];
+  let failFeed = false;
+  globalThis.fetch = async (url, options) => {
+    requested.push(String(url));
+    if (url === feed) {
+      if (failFeed) throw new Error("feed offline");
+      return { ok: true, json: async () => ({ events: [{ type: "job", at: "2026-11-14T00:00:00Z", title: "X job" }] }) };
+    }
+    assert.equal(url, slot.rpc);
+    const method = JSON.parse(options.body).params.method_name;
+    const value = method === "get_config" ? { jobs: 0, disputes: 0 }
+      : method === "get_jobs" ? [{ id: 0, title: "Chain job", budget: "1", posted_ms: 1 }]
+        : [];
+    return { json: async () => ({ result: { result: [...new TextEncoder().encode(JSON.stringify(value))] } }) };
+  };
+  try {
+    const loaded = await collect(sources);
+    assert.equal(loaded.x.state, "ok");
+    assert.equal(loaded.events.length, 3);
+    assert.deepEqual(loaded.errors, []);
+    assert.equal(requested.filter((url) => url === feed).length, 1);
+
+    failFeed = true;
+    requested.length = 0;
+    const offline = await collect(sources);
+    assert.equal(offline.x.state, "error");
+    assert.equal(offline.events.length, 2);
+    assert.deepEqual(offline.errors, []);
+    assert.equal(requested.filter((url) => url === feed).length, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

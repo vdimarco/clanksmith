@@ -139,15 +139,7 @@ export async function collect(sources, search = "") {
   }));
   let x = { state: "missing", events: [], message: "X feed not published" };
   const feed = xUrl(sources, search);
-  if (feed) {
-    const proxied = `/api/x?u=${encodeURIComponent(feed)}`;
-    x = await loadX(proxied);
-    if (x.state !== "ok") {
-      const direct = await loadX(feed);
-      if (direct.state === "ok") x = direct;
-      else x = direct.state === "error" ? direct : x;
-    }
-  }
+  if (feed) x = await loadX(feed);
   events.push(...x.events);
   let credit = null;
   const creditId = sources.credit?.contract || (typeof sources.credit === "string" ? sources.credit : null);
