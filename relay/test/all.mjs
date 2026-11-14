@@ -209,8 +209,10 @@ ok("a fourth submission on one bounty is refused", fourth.result.ok === false &&
 
 const worker = readFileSync(new URL("../../mcp/worker.mjs", import.meta.url), "utf8");
 ok("the worker is a durable object and does not embed a token", worker.includes("extends DurableObject") && worker.includes("CLANKSMITH_LIVE_WRITES") && !worker.includes("aat_"));
-const wrangler = readFileSync(new URL("../../wrangler.jsonc", import.meta.url), "utf8");
-ok("wrangler keeps writes off and does not publish a workers.dev url", wrangler.includes('"CLANKSMITH_LIVE_WRITES": "false"') && wrangler.includes('"workers_dev": false'));
+const mcpWrangler = readFileSync(new URL("../../wrangler.jsonc", import.meta.url), "utf8");
+ok("the mcp config keeps writes off and does not publish a workers.dev url", mcpWrangler.includes('"name": "clanksmith-mcp"') && mcpWrangler.includes('"CLANKSMITH_LIVE_WRITES": "false"') && mcpWrangler.includes('"workers_dev": false'));
+const siteWrangler = readFileSync(new URL("../../worker/wrangler.jsonc", import.meta.url), "utf8");
+ok("deploy targets the existing clanksmith worker with writes off", siteWrangler.includes('"name": "clanksmith"') && !siteWrangler.includes("clanksmith-mcp") && siteWrangler.includes('"CLANKSMITH_LIVE_WRITES": "false"') && siteWrangler.includes('"AGENT_MARKET_DRY_RUN": "true"') && siteWrangler.includes('"workers_dev": true') && siteWrangler.includes('"custom_domain": true') && siteWrangler.includes('"../site"'));
 
 const demo = await runDemo();
 const log = demo.log;

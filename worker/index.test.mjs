@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import worker from "./index.js";
+import { handleRequest } from "./site.mjs";
 
 const env = {
   ASSETS: {
@@ -14,7 +14,7 @@ const env = {
 };
 
 test("site Worker preserves redirects, cache rules, and board feed access", async () => {
-  const get = (url) => worker.fetch(new Request(url), env);
+  const get = (url) => handleRequest(new Request(url), env);
   const home = await get("https://clanksmith.com/");
   assert.equal(home.status, 200);
   assert.match(home.headers.get("content-security-policy"), /connect-src 'self' https:\/\/rpc\.mainnet/);
@@ -32,4 +32,37 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
   assert.equal(redirect.status, 301);
   assert.equal(redirect.headers.get("location"), "https://clanksmith.com/board/?x=feed");
   assert.equal((await get("http://clanksmith.com/")).headers.get("location"), "https://clanksmith.com/");
+});
+
+test("/mcp goes to the relay and www still redirects", async () => {
+  let assets = 0;
+  const counting = {
+    ASSETS: {
+      fetch() {
+        assets += 1;
+        return new Response("asset");
+      },
+    },
+  };
+  const mcp = await handleRequest(new Request("https://clanksmith.com/mcp"), counting, {
+    relay() { return new Response("mcp", { status: 200 }); },
+  });
+  assert.equal(mcp.status, 200);
+  assert.equal(await mcp.text(), "mcp");
+  assert.equal(assets, 0);
+
+  const slash = await handleRequest(new Request("https://clanksmith.com/mcp/?q=1"), counting, {
+    relay(request) {
+      assert.equal(new URL(request.url).pathname, "/mcp");
+      assert.equal(new URL(request.url).search, "?q=1");
+      return new Response("ok");
+    },
+  });
+  assert.equal(slash.status, 200);
+
+  const www = await handleRequest(new Request("https://www.clanksmith.com/mcp?x=1"), counting, {
+    relay() { throw new Error("www should redirect before the relay"); },
+  });
+  assert.equal(www.status, 301);
+  assert.equal(www.headers.get("location"), "https://clanksmith.com/mcp?x=1");
 });

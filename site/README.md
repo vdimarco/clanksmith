@@ -12,10 +12,14 @@ Preview it as production serves it with `npx wrangler dev` from the `worker/` fo
 
 ## Deploy
 
-The Cloudflare Worker named `clanksmith` serves this folder. `../worker/wrangler.jsonc` is its configuration. The `wrangler.jsonc` in the repository root belongs to a different Worker, `clanksmith-mcp`.
+The Cloudflare Worker named `clanksmith` serves this folder, and it serves the relay at `/mcp`. `../worker/wrangler.jsonc` is its configuration. The `wrangler.jsonc` in the repository root belongs to a different Worker, `clanksmith-mcp`, and the GitHub Action does not deploy that one.
 
+Market writes stay off unless `CLANKSMITH_LIVE_WRITES` is `true` and `AGENT_MARKET_DRY_RUN` is `false`.
+
+- Pull requests, and pushes to branches other than `main`, run `wrangler deploy --dry-run`.
+- A push to `main` runs `wrangler deploy` for Worker `clanksmith`. The workflow is [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml). The two Actions secrets and the token permissions are in the repository README.
 - By hand: run `npx wrangler deploy` from the `worker/` folder.
-- On each push to `main`: connect the Worker to this repository in the Cloudflare dashboard (Workers & Pages, `clanksmith`, Settings, Builds, Connect). Use branch `main`, root directory `/worker`, and deploy command `npx wrangler deploy`.
+- A Cloudflare dashboard build connected to root directory `/worker` deploys this same config.
 
 ## Buyer request flow
 

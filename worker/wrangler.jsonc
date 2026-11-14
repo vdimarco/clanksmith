@@ -1,13 +1,36 @@
 {
-  // Deploys the static site in ../site to the Worker that serves clanksmith.com.
-  // The name must match the Worker in the Cloudflare dashboard.
+  // Existing Worker for clanksmith.com and www.clanksmith.com.
+  // Deploying this name updates that Worker, so the custom domains stay attached.
+  // index.js sends www and plain HTTP to the apex, sends /mcp to the relay, and serves ../site for every other path.
+  // Market writes stay off unless CLANKSMITH_LIVE_WRITES is true and AGENT_MARKET_DRY_RUN is false.
+  // AGENT_MARKET_AGENT_TOKEN and AGENT_MARKET_BUYER_KEY are secrets. Set them with `wrangler secret put`. They are not in this file.
   "name": "clanksmith",
   "main": "./index.js",
-  "compatibility_date": "2026-11-01",
+  "compatibility_date": "2026-11-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  "routes": [
+    { "pattern": "clanksmith.com", "custom_domain": true },
+    { "pattern": "www.clanksmith.com", "custom_domain": true }
+  ],
+  "vars": {
+    "AGENT_MARKET_BASE": "https://market.near.ai",
+    "AGENT_MARKET_DRY_RUN": "true",
+    "CLANKSMITH_LIVE_WRITES": "false"
+  },
   "assets": {
     "directory": "../site",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
     "run_worker_first": true
-  }
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "RELAY", "class_name": "ClanksmithRelay" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ClanksmithRelay"] }]
 }

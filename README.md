@@ -26,6 +26,45 @@ Tools: `list_jobs`, `get_job`, `submit`, `status`. The server is a dry run unles
 
 `node relay/test/all.mjs` runs the mocked path. `node relay/demo.mjs` writes `relay/demo.log`. Details, the sample solver, and open questions are in [relay/README.md](relay/README.md).
 
+## Deploy clanksmith.com
+
+The site and the relay are one Cloudflare Worker named `clanksmith`. That is the Worker already attached to `clanksmith.com`, `www.clanksmith.com`, and `clanksmith.vdimarco.workers.dev`. A deploy updates that Worker, so the custom domains stay on it.
+
+`site/` is the static site, served with Workers Static Assets. Those files are the live page. Cloudflare adds its analytics beacon when it serves the HTML. `worker/index.js` sends `www.clanksmith.com` and plain HTTP to `https://clanksmith.com` with a 301, sends `/mcp` and `/mcp/` to the relay, and serves every other path from `site/`. Config is `worker/wrangler.jsonc`. `workers_dev` stays true so the `workers.dev` hostname keeps working next to the custom domains. The `wrangler.jsonc` in the repository root is a different Worker, `clanksmith-mcp`, and this workflow does not deploy it.
+
+Market writes stay off. The config sets `CLANKSMITH_LIVE_WRITES` to `false` and `AGENT_MARKET_DRY_RUN` to `true`. Live writes need both switches changed in that file. A deploy writes those plain vars onto the Worker. `AGENT_MARKET_AGENT_TOKEN` and `AGENT_MARKET_BUYER_KEY` are Worker secrets. Put them on the Worker with `wrangler secret put` when you mean to. They are not in the repo, and a deploy does not delete secrets already stored on the Worker.
+
+GitHub Actions workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
+
+- On a pull request, and on a push to any branch other than `main`, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs worker/index.test.mjs`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest. It does not deploy, and it does not need the secrets below.
+- On a push to `main`, it runs those tests, then `wrangler deploy --config worker/wrangler.jsonc` for Worker `clanksmith`.
+
+Wrangler is the dev dependency pinned in `package.json` (4.162.0). The workflow installs from the lockfile and calls that binary.
+
+### One-time: repository secrets
+
+Add these two Actions secrets on this GitHub repository (Settings, Secrets and variables, Actions). Do not commit the values, and do not paste them into a pull request.
+
+| Secret | Value |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | The API token described below |
+| `CLOUDFLARE_ACCOUNT_ID` | The Cloudflare account id that owns the `clanksmith` Worker and the `clanksmith.com` zone |
+
+The account id is on the Workers & Pages overview, and on the `clanksmith.com` zone overview.
+
+### API token permissions
+
+Create the token on that same account. Scope it to this account, and scope the zone permission to `clanksmith.com` only.
+
+| Permission | Scope | Why |
+| --- | --- | --- |
+| Workers Scripts Edit | Account | Deploy the existing `clanksmith` script, including static assets and the `ClanksmithRelay` Durable Object. In the newer roles list this is the Editor role at the Workers product scope. Custom domains do not support a per-Worker role, so grant it on the account. The Worker already exists, so the token does not need to create Workers. |
+| Workers Routes Edit | Zone `clanksmith.com` | Keep the custom domains in `worker/wrangler.jsonc` attached on each deploy (`clanksmith.com` and `www.clanksmith.com`). The token form may label this Workers Routes Write. |
+
+A custom domain writes its own DNS record. The token does not need a separate DNS permission.
+
+Sources: [Workers roles and permissions](https://developers.cloudflare.com/workers/authorization/workers/), [API token permissions](https://developers.cloudflare.com/fundamentals/api/reference/permissions/), [Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/), [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+
 ## For judges: four checks
 
 | Do this | See this |
