@@ -1,6 +1,6 @@
 // Read-only checks of the testnet TEE escrow. No key. Node 18 or newer.
 //
-//   node pop/tee/scripts/verify.mjs
+//   node tee/scripts/verify.mjs
 //
 // Each line starts with "ok" or "FAIL". Exits 1 if any check fails.
 import fs from "node:fs";

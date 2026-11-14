@@ -1,4 +1,4 @@
-// X25519 + XChaCha20-Poly1305 box. Same bytes as pop/tee/checker seal/open.
+// X25519 + XChaCha20-Poly1305 box. Same bytes as tee/checker seal/open.
 import { x25519 } from "@noble/curves/ed25519.js";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { randomBytes } from "node:crypto";

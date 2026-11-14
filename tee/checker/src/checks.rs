@@ -1,4 +1,4 @@
-//! The same checks as pop/contract/src/checks.rs. Integer math only.
+//! The same checks as contract/src/checks.rs. Integer math only.
 //! Copied so this binary does not share a crate with the mainnet contract.
 use serde_json::Value;
 

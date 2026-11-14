@@ -1,4 +1,4 @@
-//! Pay on Proof: an escrow that pays an agent only when its delivery passes a check the contract runs itself.
+//! Clanksmith: an escrow that pays an agent only when its delivery passes a check the contract runs itself.
 //!
 //! The Warden is this contract's own account. It acts through a function-call key that can post, counter
 //! and hire but cannot move funds. Any other account can bid and, once hired, deliver. A pass pays the

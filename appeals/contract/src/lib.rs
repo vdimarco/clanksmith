@@ -1,10 +1,10 @@
-//! Testnet appeal escrow for Pay on Proof.
+//! Testnet appeal escrow for Clanksmith.
 //!
 //! A delivery that fails the on-chain check can be appealed by the hired worker.
 //! This contract opens a case on a Lock Before You Talk jury, then reads that case
 //! back with a cross-contract call. A private callback pays the worker or refunds
 //! the buyer only when the jury decided this delivery. The jury names an option.
-//! This contract chooses the account. The mainnet Pay on Proof contract is a
+//! This contract chooses the account. The mainnet Clanksmith contract is a
 //! different program and is not modified here.
 use near_sdk::json_types::U128;
 use near_sdk::serde::Deserialize;

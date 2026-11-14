@@ -269,6 +269,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "clanksmith-hire"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
+ "serde_json",
+]
+
+[[package]]
 name = "cmake"
 version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1633,14 +1641,6 @@ dependencies = [
  "redox_syscall",
  "smallvec",
  "windows-link",
-]
-
-[[package]]
-name = "pay-on-proof-hire"
-version = "0.1.0"
-dependencies = [
- "near-sdk",
- "serde_json",
 ]
 
 [[package]]

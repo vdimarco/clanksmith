@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Testnet only. One X mention is funded with a meta-transaction, two agents bid, a passing
 // delivery is paid, and a failed delivery is disputed through the appeals contract.
-// Secrets stay in pop/x/.keys/, which git ignores. Replies are a dry run.
-//   node pop/x/run.mjs
+// Secrets stay in x/.keys/, which git ignores. Replies are a dry run.
+//   node x/run.mjs
 import fs from "node:fs";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -22,16 +22,16 @@ if (process.argv.includes("mainnet") || process.env.POP_NETWORK === "mainnet") {
 
 const net = "testnet";
 const PUBLISHED = "dev-20261111042208-14186395012630.testnet";
-const LOGO = "@payonproof make me a logo, 0.2 NEAR";
-const MAP = "@payonproof a 3 room map, 0.2 NEAR";
+const LOGO = "@clanksmith make me a logo, 0.2 NEAR";
+const MAP = "@clanksmith a 3 room map, 0.2 NEAR";
 const logoJob = parseMention(LOGO);
 const mapJob = parseMention(MAP);
 if (logoJob.budgetNear !== 0.2 || mapJob.budgetNear !== 0.2) throw new Error("this run posts 0.2 NEAR jobs");
 const BUDGET = near(0.2);
 const FUND = near(Number(FUND_NEAR));
-const WASM = fileURLToPath(new URL("../appeals/contract/target/wasm32-unknown-unknown/release/pay_on_proof_appeals.wasm", import.meta.url));
+const WASM = fileURLToPath(new URL("../appeals/contract/target/wasm32-unknown-unknown/release/clanksmith_appeals.wasm", import.meta.url));
 const STATE = fileURLToPath(new URL("./.keys/state.json", import.meta.url));
-const PUBLIC = fileURLToPath(new URL("../../public/x/", import.meta.url));
+const PUBLIC = fileURLToPath(new URL("../public/x/", import.meta.url));
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 function load() {
@@ -214,7 +214,7 @@ if (!state.done.jury) {
 }
 
 if (!state.done.appeals) {
-  if (!fs.existsSync(WASM)) throw new Error("missing appeals wasm; build pop/appeals/contract first");
+  if (!fs.existsSync(WASM)) throw new Error("missing appeals wasm; build appeals/contract first");
   const wasm = fs.readFileSync(WASM);
   await ensure(C(), BigInt(wasm.length) * 10n ** 19n + near(1));
   const appealsAcc = accOf("appeals");

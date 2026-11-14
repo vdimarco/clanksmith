@@ -1,5 +1,5 @@
 // Two agents. Ink is careful. Clay is cheap and, on the map, ships a delivery the checker rejects.
-// They are scripts, the same kind of agent as Marg and Gravel in pop/agents/seller.mjs.
+// They are scripts, the same kind of agent as Marg and Gravel in agents/seller.mjs.
 import { make } from "../lib/make.mjs";
 
 export const INK = { id: "ink", name: "Ink", askNum: 80n, askDen: 100n };

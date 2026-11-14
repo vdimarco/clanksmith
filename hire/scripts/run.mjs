@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Testnet only. One Pay on Proof job hires a second agent.
+// Testnet only. One Clanksmith job hires a second agent.
 // The parent keeps a function-call key and no full-access key. The contract refuses a sub-job over the parent's cap.
 // The sub-account is paid from that cap. The parent's remainder is paid in NEAR to a separate owner account, which then spends some of it.
 //
-//   node pop/hire/scripts/run.mjs
+//   node hire/scripts/run.mjs
 //
-// Secrets stay in pop/hire/.keys/. This writes the public record to pop/hire/run.json.
+// Secrets stay in hire/.keys/. This writes the public record to hire/run.json.
 // It does not sign anything on mainnet.
 import fs from "node:fs";
 import path from "node:path";
@@ -22,7 +22,7 @@ if (process.argv.includes("mainnet")) {
 }
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const WASM = path.join(here, "../contract/target/wasm32-unknown-unknown/release/pay_on_proof_hire.wasm");
+const WASM = path.join(here, "../contract/target/wasm32-unknown-unknown/release/clanksmith_hire.wasm");
 const MOCK = path.join(here, "../../mock-intents/target/wasm32-unknown-unknown/release/mock_intents.wasm");
 const RUN = path.join(here, "../run.json");
 const ks = keyStore();
@@ -124,8 +124,8 @@ function hashFrom(text) {
 }
 
 async function main() {
-  if (!fs.existsSync(WASM)) throw new Error("missing hire wasm. Build pop/hire/contract for wasm32-unknown-unknown release first.");
-  if (!fs.existsSync(MOCK)) throw new Error("missing mock-intents wasm. Build pop/mock-intents first.");
+  if (!fs.existsSync(WASM)) throw new Error("missing hire wasm. Build hire/contract for wasm32-unknown-unknown release first.");
+  if (!fs.existsSync(MOCK)) throw new Error("missing mock-intents wasm. Build mock-intents first.");
 
   step("Accounts from the testnet faucet");
   const contract = await faucet("v2-contract");
@@ -402,7 +402,7 @@ async function main() {
     fullAccessStillOnChain: {
       contract: fullKeys(finalContractKeys).map((k) => k.public_key),
       parent: fullKeys(parentKeys).map((k) => k.public_key),
-      note: "The owner, the sub-agent, the beneficiary, and the mock intents account still have full-access keys. Their secrets are only in pop/hire/.keys/testnet.json, which git ignores. The contract account and the parent account do not. The parent's pay goes to the owner.",
+      note: "The owner, the sub-agent, the beneficiary, and the mock intents account still have full-access keys. Their secrets are only in hire/.keys/testnet.json, which git ignores. The contract account and the parent account do not. The parent's pay goes to the owner.",
     },
     txs: {
       init: prog.initTx || null,
@@ -433,10 +433,10 @@ async function main() {
     spent: cfg.spent,
     reserved: cfg.reserved,
     receipts: receipts.map((r) => ({ id: r.id, role: r.role, pass: r.pass, price: r.price, payout: r.payout, rail: r.rail, reason: r.reason })),
-    secrets: "pop/hire/.keys/testnet.json is gitignored. It holds every testnet secret from this run, including full-access keys for the owner, the sub-agent, the beneficiary, and the mock intents account, plus the deleted full-access secrets of the contract and the parent.",
+    secrets: "hire/.keys/testnet.json is gitignored. It holds every testnet secret from this run, including full-access keys for the owner, the sub-agent, the beneficiary, and the mock intents account, plus the deleted full-access secrets of the contract and the parent.",
   };
   fs.writeFileSync(RUN, JSON.stringify(run, null, 2) + "\n");
-  console.log("\nWrote pop/hire/run.json");
+  console.log("\nWrote hire/run.json");
   console.log(`spent ${fmt(cfg.spent)} reserved ${fmt(cfg.reserved)} cap ${fmt(cfg.cap)} job ${job.state} sub ${subJob.state}`);
   const bad = receipts.filter((r) => r.pass && r.payout !== "sent");
   if (job.state !== "done" || subJob.state !== "done" || bad.length) {

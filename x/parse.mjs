@@ -1,5 +1,5 @@
-// Turns one X mention into a Pay on Proof job the contract can check.
-// "@payonproof make me a logo, 5 NEAR" is a paint job with contrast 450 and a budget of 5.
+// Turns one X mention into a Clanksmith job the contract can check.
+// "@clanksmith make me a logo, 5 NEAR" is a paint job with contrast 450 and a budget of 5.
 
 const OPTIONS = [
   { re: /\blogo\b/, kind: "paint", title: "logo", spec: { contrast_x100: 450 } },

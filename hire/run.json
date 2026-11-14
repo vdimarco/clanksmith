@@ -28,7 +28,7 @@
   "fullAccessStillOnChain": {
     "contract": [],
     "parent": [],
-    "note": "The owner, the sub-agent, the beneficiary, and the mock intents account still have full-access keys. Their secrets are only in pop/hire/.keys/testnet.json, which git ignores. The contract account and the parent account do not. The parent's pay goes to the owner."
+    "note": "The owner, the sub-agent, the beneficiary, and the mock intents account still have full-access keys. Their secrets are only in hire/.keys/testnet.json, which git ignores. The contract account and the parent account do not. The parent's pay goes to the owner."
   },
   "txs": {
     "init": "4FkL3qL5z2gxUMHiMVfwceuNMmmtgemKi8vU8ZDNMXWP",
@@ -78,5 +78,5 @@
       "reason": "all 3 rooms reach the entry, exit found"
     }
   ],
-  "secrets": "pop/hire/.keys/testnet.json is gitignored. It holds every testnet secret from this run, including full-access keys for the owner, the sub-agent, the beneficiary, and the mock intents account, plus the deleted full-access secrets of the contract and the parent."
+  "secrets": "hire/.keys/testnet.json is gitignored. It holds every testnet secret from this run, including full-access keys for the owner, the sub-agent, the beneficiary, and the mock intents account, plus the deleted full-access secrets of the contract and the parent."
 }

@@ -4,7 +4,7 @@
 //! guest signs with a key that exists only for this binary and this contract. This contract checks that
 //! signature. It does not see the delivery. The delivery is a ciphertext the guest opens.
 //!
-//! This contract is deployed on testnet only. The mainnet Pay on Proof contract is a different program.
+//! This contract is deployed on testnet only. The mainnet Clanksmith contract is a different program.
 use near_sdk::json_types::U128;
 use near_sdk::serde_json::{json, Value};
 use near_sdk::store::Vector;
@@ -143,7 +143,7 @@ fn hex_64(s: &str) -> Option<[u8; 64]> {
 
 fn sha256_hex(bytes: &[u8]) -> String { hex_encode(&env::sha256(bytes)) }
 
-/// Same text as pop/tee/checker `verdict_message`.
+/// Same text as tee/checker `verdict_message`.
 fn verdict_message(job: u32, delivery: &str, input: &str, pass: bool, reason: &str) -> Option<Vec<u8>> {
     if hex_32(delivery).is_none() || hex_32(input).is_none() { return None; }
     if reason.len() > 180 || reason.chars().any(|c| c == '\n' || c == '\r') { return None; }

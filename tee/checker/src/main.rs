@@ -3,7 +3,7 @@
 //! `check` opens that seal, opens the seller's box, runs the check, and signs the verdict.
 //! The delivery plaintext is not written out.
 use base64::Engine;
-use pop_tee_checker::{checks, init_message, open, public_from_secret, sha256, verdict_message, AAD};
+use clanksmith_tee_checker::{checks, init_message, open, public_from_secret, sha256, verdict_message, AAD};
 use serde_json::{json, Value};
 use std::io::{self, Read, Write};
 

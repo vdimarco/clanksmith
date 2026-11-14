@@ -1,8 +1,8 @@
 {
-  "name": "pop-tee",
+  "name": "clanksmith-tee",
   "private": true,
   "type": "module",
-  "description": "Testnet TEE checker for Pay on Proof",
+  "description": "Testnet TEE checker for Clanksmith",
   "scripts": {
     "test": "cargo test --manifest-path checker/Cargo.toml --lib && cargo test --manifest-path contract/Cargo.toml --lib && node --test test/codec.test.mjs"
   },

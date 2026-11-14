@@ -10,7 +10,7 @@ function linkify(text) {
   );
 }
 
-export function renderThread(posts, { bot = "payonproof" } = {}) {
+export function renderThread(posts, { bot = "clanksmith" } = {}) {
   const items = posts.map((p) => {
     const who = p.who === "you" ? "you" : bot;
     const img = p.image ? `<img class="swatch" alt="Delivered swatch" src="${esc(p.image)}">` : "";
@@ -21,7 +21,7 @@ export function renderThread(posts, { bot = "payonproof" } = {}) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pay on Proof thread, dry run</title>
+<title>Clanksmith thread, dry run</title>
 <style>
   body { margin: 0; background: #1c1914; color: #f4efe4; font: 16px/1.45 system-ui, sans-serif; }
   main { max-width: 28rem; margin: 0 auto; padding: 12px; }

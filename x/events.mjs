@@ -1,4 +1,4 @@
-// The feed pop/board/ reads. One JSON object, append-only events, testnet transaction links.
+// The feed board/ reads. One JSON object, append-only events, testnet transaction links.
 export const TYPES = ["job_opened", "bid", "delivered", "checked", "paid", "disputed", "ruled"];
 const TX = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
 

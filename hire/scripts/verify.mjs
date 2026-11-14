@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// Read-only check of the recorded Pay on Proof hire run. No key, no install.
-//   node pop/hire/scripts/verify.mjs
-// It reads pop/hire/run.json for the testnet account ids and transaction hashes, then reads the chain.
+// Read-only check of the recorded Clanksmith hire run. No key, no install.
+//   node hire/scripts/verify.mjs
+// It reads hire/run.json for the testnet account ids and transaction hashes, then reads the chain.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PARENT_METHODS, WARDEN_METHODS } from "../lib/methods.mjs";
 
 const RUN_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), "../run.json");
-if (!fs.existsSync(RUN_PATH)) { console.error("missing pop/hire/run.json. The testnet run has not been recorded."); process.exit(2); }
+if (!fs.existsSync(RUN_PATH)) { console.error("missing hire/run.json. The testnet run has not been recorded."); process.exit(2); }
 const run = JSON.parse(fs.readFileSync(RUN_PATH, "utf8"));
 if (run.network !== "testnet") { console.error("hire verify only reads a testnet run"); process.exit(2); }
 
@@ -50,7 +50,7 @@ function panicText(status) {
   return JSON.stringify(status || "");
 }
 
-console.log(`Pay on Proof hire on testnet: ${C}\n${EXPLORER}/address/${C}\n`);
+console.log(`Clanksmith hire on testnet: ${C}\n${EXPLORER}/address/${C}\n`);
 
 const keys = (await rpc("query", { request_type: "view_access_key_list", finality: "final", account_id: C })).keys;
 const full = keys.filter((k) => k.access_key.permission === "FullAccess");

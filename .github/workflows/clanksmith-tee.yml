@@ -1,0 +1,33 @@
+# Tests for the TEE checker. No key, no network, no mainnet transaction.
+name: clanksmith-tee
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tee:
+    name: TEE checker and testnet contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add wasm32-unknown-unknown
+          rustc --version
+      - name: cargo test
+        run: |
+          cargo test --manifest-path tee/checker/Cargo.toml --lib
+          cargo test --manifest-path tee/contract/Cargo.toml --lib
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: codec
+        run: cd tee && npm ci --no-audit --no-fund && node --test test/codec.test.mjs

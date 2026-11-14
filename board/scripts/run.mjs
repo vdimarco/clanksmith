@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Testnet only. Deploys the credit contract and the bounty pool, runs the score gate and a
-// paid delivery, and writes pop/board/run.json. Secrets stay in pop/board/.keys/.
-// Refuses mainnet. Requires `npm ci` in pop/ so near-api-js is installed.
+// paid delivery, and writes board/run.json. Secrets stay in board/.keys/.
+// Refuses mainnet. Requires `npm ci` at the repo root so near-api-js is installed.
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -300,7 +300,7 @@ async function main() {
   run.fullAccessStillOnChain = [
     "novice", "funder-a", "funder-b", "funder-c", "worker",
   ].map((name) => `${name} ${loadKeys()[name].accountId} ${loadKeys()[name].publicKey}`);
-  run.secrets = "pop/board/.keys/testnet.json is gitignored. It holds the testnet secrets for the accounts above, including the deleted full-access secrets of the credit contract and the pool.";
+  run.secrets = "board/.keys/testnet.json is gitignored. It holds the testnet secrets for the accounts above, including the deleted full-access secrets of the credit contract and the pool.";
   writeRun();
   console.log("wrote", RUN.pathname);
 }
@@ -328,7 +328,7 @@ async function tryDao(funderA, funderB, poolId) {
       bounty_forgiveness_period: "86400000000000",
     };
     const args = Buffer.from(JSON.stringify({
-      config: { name, purpose: "Fund a Pay on Proof pool that pays an agent only when a check passes", metadata: "" },
+      config: { name, purpose: "Fund a Clanksmith pool that pays an agent only when a check passes", metadata: "" },
       policy,
     })).toString("base64");
     const created = await call(signer(funderA), FACTORY, "create", { name, args }, { gas: 200n * TGAS, deposit: near(6.5) });
@@ -346,7 +346,7 @@ async function tryDao(funderA, funderB, poolId) {
     }
     const proposal = await call(signer(funderA), daoId, "add_proposal", {
       proposal: {
-        description: "Fund the Pay on Proof pool",
+        description: "Fund the Clanksmith pool",
         kind: {
           FunctionCall: {
             receiver_id: poolId,

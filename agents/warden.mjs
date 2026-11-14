@@ -1,4 +1,4 @@
-// The Warden: a general contractor agent. It posts jobs to Pay on Proof, reads bids, counters once,
+// The Warden: a general contractor agent. It posts jobs to Clanksmith, reads bids, counters once,
 // hires the best value it can find, and expires sellers who miss the window. It signs with a
 // function-call key, so it can do all of that and still cannot send funds anywhere.
 import { account, call, view, near, fmt, TGAS } from "../lib/near.mjs";
