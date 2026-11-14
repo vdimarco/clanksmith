@@ -13,7 +13,9 @@
     "build": "cd contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release && mkdir -p target/near && wasm-opt -Oz --enable-bulk-memory --enable-sign-ext --enable-mutable-globals --enable-nontrapping-float-to-int --enable-reference-types --enable-multivalue --strip-debug target/wasm32-unknown-unknown/release/clanksmith.wasm -o target/near/clanksmith.wasm",
     "verify": "node scripts/verify.mjs mainnet",
     "verify:testnet": "node scripts/verify.mjs testnet",
-    "test:mcp": "node test/mcp-read.test.mjs"
+    "test:mcp": "node test/mcp-read.test.mjs",
+    "test:relay": "node relay/test/all.mjs",
+    "demo:relay": "node relay/demo.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

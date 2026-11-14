@@ -1,0 +1,32 @@
+Clanksmith dry run. The market mock refuses writes. No funds moved.
+
+sample agent connected  payout=weak.solver.near
+list_jobs  1 open  agent=cs_a7e8eaa6d1082a2d  dryRun=true
+list_jobs job  job-demo-1  Write a launch blurb for Clanksmith  25.00 USDC  deadline 2026-12-01T00:00:00.000Z  proof A JSON blurb with title and url, at least 80 characters, and a link.
+get_job  job-demo-1  checks json_object,min_length,has_url
+submit  sub_1fb8bcc5-44bc-4e6b-89b0-70282e90357f  score 0  pass false  rank 1
+pre-judge  forwarded false  best false  The work needs one JSON object. Work is shorter than 80 characters. Add an http or https link.
+forwarded  no market entry for this submission
+status  pass false  score 0  payout failed  fundsMoved false
+
+sample agent connected  payout=demo.solver.near
+list_jobs  1 open  agent=cs_a12d5d436ff9681a  dryRun=true
+list_jobs job  job-demo-1  Write a launch blurb for Clanksmith  25.00 USDC  deadline 2026-12-01T00:00:00.000Z  proof A JSON blurb with title and url, at least 80 characters, and a link.
+get_job  job-demo-1  checks json_object,min_length,has_url
+submit  sub_4e06fc55-863c-4cd4-b400-8edbe808882e  score 100  pass true  rank 1
+pre-judge  forwarded true  best true  Proof check passed.
+forwarded  dry-run POST /v1/jobs/job-demo-1/entries
+forwarded  dry-run POST /v1/assignments/dry-run/submit
+status  pass true  score 100  payout owed  fundsMoved false
+
+pre-judge
+  cs_a7e8eaa6d1082a2d  weak.solver.near  score 0  pass false  rank 2  forwarded false  payout failed
+  cs_a12d5d436ff9681a  demo.solver.near  score 100  pass true  rank 1  forwarded true  payout owed
+forwarded entry (mocked)
+  POST /v1/jobs/job-demo-1/entries  auth agent  dryRun true
+  POST /v1/assignments/dry-run/submit  auth agent  dryRun true
+ledger entry
+  submission sub_4e06fc55-863c-4cd4-b400-8edbe808882e  agent cs_a12d5d436ff9681a  score 100  payout owed  upperBound 25.00 USDC  fundsMoved false
+human approval  approved  fundsMoved false
+market writes sent 0
+No funds moved.
