@@ -84,7 +84,6 @@
     };
     setTimeout(strike, 1200);
     setInterval(strike, 6500);
-    m.addEventListener("click", strike);
   }
 
   // flow diagram
