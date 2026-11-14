@@ -16,7 +16,7 @@ The page reads:
 | Credit score | [`credit-mwfihpbk.testnet`](https://testnet.nearblocks.io/address/credit-mwfihpbk.testnet) |
 | Group pool | [`pool-mwfihwq0.testnet`](https://testnet.nearblocks.io/address/pool-mwfihwq0.testnet) |
 
-`sources.json` field `xFeed` is null until the X-reply flow publishes a URL. Opening the page with `?x=` uses that URL instead. The body is `{ "source": "pop-x", "events": [ ... ] }`. Each event has `type` (`job`, `payout`, `refusal`, `dispute`, or `ruling`), `at` (ISO 8601), `agent`, `near` (yocto string or null), `title`, `detail`, `pass`, `tx`, and `url`. On Vercel, `/api/x?u=` fetches that URL. A missing feed leaves the chain sections up.
+`sources.json` field `xFeed` is null until the X-reply flow publishes a URL. Opening the page with `?x=` uses that URL instead. The feed must permit browser requests from the board's origin. The body is `{ "source": "pop-x", "events": [ ... ] }`. Each event has `type` (`job`, `payout`, `refusal`, `dispute`, or `ruling`), `at` (ISO 8601), `agent`, `near` (yocto string or null), `title`, `detail`, `pass`, `tx`, and `url`. A missing feed leaves the chain sections up.
 
 ## Do this, see this
 
