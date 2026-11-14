@@ -5,7 +5,7 @@
 const SECURITY = {
   "strict-transport-security": "max-age=31536000; includeSubDomains",
   "content-security-policy":
-    "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "default-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; " +
     "connect-src 'self' https://rpc.mainnet.fastnear.com https://rpc.testnet.fastnear.com; " +
     "base-uri 'none'; form-action https://x.com; frame-ancestors 'none'",

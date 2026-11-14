@@ -18,6 +18,7 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
   const home = await get("https://clanksmith.com/");
   assert.equal(home.status, 200);
   assert.match(home.headers.get("content-security-policy"), /connect-src 'self' https:\/\/rpc\.mainnet/);
+  assert.match(home.headers.get("content-security-policy"), /script-src 'self' https:\/\/static\.cloudflareinsights\.com/);
   assert.doesNotMatch(home.headers.get("content-security-policy"), /connect-src 'self' https:;/);
   assert.equal(home.headers.get("cache-control"), "public, max-age=300");
 
