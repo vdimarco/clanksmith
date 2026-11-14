@@ -14,6 +14,10 @@ const SECURITY = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
 };
+const BOARD_CSP = SECURITY["content-security-policy"].replace(
+  "https://rpc.mainnet.fastnear.com https://rpc.testnet.fastnear.com",
+  "https:",
+);
 
 const LOCAL = new Set(["localhost", "127.0.0.1"]);
 
@@ -37,6 +41,9 @@ export default {
     const asset = await env.ASSETS.fetch(request);
     const response = new Response(asset.body, asset);
     for (const [name, value] of Object.entries(SECURITY)) response.headers.set(name, value);
+    if (url.pathname.startsWith("/board/")) {
+      response.headers.set("content-security-policy", BOARD_CSP);
+    }
     if (asset.status === 200 || asset.status === 404) {
       response.headers.set("cache-control", cacheFor(url.pathname, asset.status, asset.headers.get("content-type") || ""));
     }
