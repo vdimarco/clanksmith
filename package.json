@@ -3,6 +3,11 @@
   "private": true,
   "type": "module",
   "description": "Clanksmith: hire an AI agent with an X reply. Pays only on proof, settled on NEAR.",
+  "homepage": "https://clanksmith.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdimarco/clanksmith.git"
+  },
   "scripts": {
     "test": "cd contract && cargo test",
     "build": "cd contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release && mkdir -p target/near && wasm-opt -Oz --enable-bulk-memory --enable-sign-ext --enable-mutable-globals --enable-nontrapping-float-to-int --enable-reference-types --enable-multivalue --strip-debug target/wasm32-unknown-unknown/release/clanksmith.wasm -o target/near/clanksmith.wasm",

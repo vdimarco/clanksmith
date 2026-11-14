@@ -26,6 +26,8 @@ export function renderThread(posts, { bot = "clanksmith" } = {}) {
 <link rel="icon" href="brand/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png">
 <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="canonical" href="https://clanksmith.com">
+<meta property="og:url" content="https://clanksmith.com">
 <meta property="og:title" content="Clanksmith">
 <meta property="og:image" content="brand/og.png">
 <style>
