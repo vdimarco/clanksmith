@@ -60,7 +60,7 @@ jobs:
           cargo test --manifest-path board/pool/contract/Cargo.toml
       - name: read the board sources, no key
         run: node board/scripts/verify.mjs
-      - name: site/board is a copy of board/public
+      - name: the v3 site does not publish the board
         run: node scripts/build-site.mjs --check
 
   appeals:
@@ -94,8 +94,6 @@ jobs:
           node-version: 22
       - name: parser, dry run, fund guard
         run: npm ci --no-audit --no-fund && node x/test/all.mjs
-      - name: buyer X draft
-        run: node --test site/request.test.mjs
 
   site:
     name: Site tests and Worker bundle
@@ -108,7 +106,7 @@ jobs:
           node-version: 22
       - name: Install
         run: npm ci --no-audit --no-fund
-      - name: request draft and Worker tests
-        run: node --test site/request.test.mjs worker/index.test.mjs
+      - name: Worker tests
+        run: node --test worker/index.test.mjs
       - name: bundle the Worker and its assets, no upload
         run: npx wrangler deploy --dry-run --config worker/wrangler.jsonc
