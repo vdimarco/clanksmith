@@ -108,5 +108,7 @@ jobs:
           node-version: 22
       - name: request draft tests
         run: node --test site/request.test.mjs
+      - name: Worker response tests
+        run: node --test worker/index.test.mjs
       - name: bundle the Worker and its assets, no upload
         run: cd worker && npx --yes wrangler@4 deploy --dry-run
