@@ -32,8 +32,9 @@
     const units = BigInt(yocto) / 10n ** 20n;
     return `${units / 10000n}.${String(units % 10000n).padStart(4, "0")} NEAR`;
   };
-  const cell = (text) => {
+  const cell = (text, label) => {
     const td = document.createElement("td");
+    td.dataset.label = label;
     td.textContent = text;
     return td;
   };
@@ -54,13 +55,14 @@
       stamp.className = r.pass ? "st ok" : "st hot";
       stamp.textContent = r.pass ? "Paid" : "Refused";
       const last = document.createElement("td");
+      last.dataset.label = "Result";
       last.append(stamp);
       tr.append(
-        cell(String(r.id).padStart(2, "0")),
-        cell(`${titles.get(r.job) || "Job " + r.job}, ${r.kind}`),
-        cell(r.reason),
-        cell(near(r.price)),
-        cell(!r.pass ? "none" : r.rail === "intents" ? "NEAR Intents" : "NEAR"),
+        cell(String(r.id).padStart(2, "0"), "No."),
+        cell(`${titles.get(r.job) || "Job " + r.job}, ${r.kind}`, "Job"),
+        cell(r.reason, "What the check found"),
+        cell(near(r.price), "Price"),
+        cell(!r.pass ? "none" : r.rail === "intents" ? "NEAR Intents" : "NEAR", "Paid by"),
         last,
       );
       return tr;

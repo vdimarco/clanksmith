@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { buildRequestPost } from "./request.mjs";
 
 const brief = {
@@ -17,6 +18,24 @@ test("complete buyer brief becomes a short X post", () => {
   assert.match(post, /Done when: One-page brief with five cited themes and source links/);
   assert.match(post, /By: 2099-12-01$/);
   assert.ok(Array.from(post).length <= 240);
+});
+
+test("the work order is on the page before the script runs", () => {
+  const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  const form = html.slice(html.indexOf("<form id=\"request-form\""), html.indexOf("</form>", html.indexOf("<form id=\"request-form\"")));
+  assert.doesNotMatch(form, /\shidden[\s>]/);
+  assert.match(form, /Open X draft/);
+  assert.match(form, /name="text" value="@clanksmith "/);
+  assert.match(html, /id="request-fallback"/);
+});
+
+test("the board uses the live page copy and absolute share tags", () => {
+  const html = readFileSync(new URL("../board/public/index.html", import.meta.url), "utf8");
+  assert.doesNotMatch(html, /Reply with an intent/);
+  assert.doesNotMatch(html, /wordmark/);
+  assert.match(html, /Post a job on X\. Pay when it passes\./);
+  assert.match(html, /property="og:url" content="https:\/\/clanksmith\.com\/board\/"/);
+  assert.match(html, /property="og:image" content="https:\/\/clanksmith\.com\/og\.jpg"/);
 });
 
 test("missing scope, invalid money, and oversized drafts cannot open X", () => {
