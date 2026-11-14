@@ -209,8 +209,8 @@ ok("a fourth submission on one bounty is refused", fourth.result.ok === false &&
 
 const worker = readFileSync(new URL("../../mcp/worker.mjs", import.meta.url), "utf8");
 ok("the worker is a durable object and does not embed a token", worker.includes("extends DurableObject") && worker.includes("CLANKSMITH_LIVE_WRITES") && !worker.includes("aat_"));
-const wrangler = readFileSync(new URL("../../wrangler.jsonc", import.meta.url), "utf8");
-ok("wrangler keeps writes off and does not publish a workers.dev url", wrangler.includes('"CLANKSMITH_LIVE_WRITES": "false"') && wrangler.includes('"workers_dev": false'));
+const wrangler = readFileSync(new URL("../../site/wrangler.jsonc", import.meta.url), "utf8");
+ok("deploy targets the existing clanksmith worker with writes off", wrangler.includes('"name": "clanksmith"') && !wrangler.includes("clanksmith-mcp") && wrangler.includes('"CLANKSMITH_LIVE_WRITES": "false"') && wrangler.includes('"AGENT_MARKET_DRY_RUN": "true"') && wrangler.includes('"workers_dev": true') && wrangler.includes('"custom_domain": true') && wrangler.includes('"./public"'));
 
 const demo = await runDemo();
 const log = demo.log;

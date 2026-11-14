@@ -15,11 +15,17 @@
     "verify:testnet": "node scripts/verify.mjs testnet",
     "test:mcp": "node test/mcp-read.test.mjs",
     "test:relay": "node relay/test/all.mjs",
-    "demo:relay": "node relay/demo.mjs"
+    "test:site": "node --test site/request.test.mjs site/src/route.test.mjs",
+    "demo:relay": "node relay/demo.mjs",
+    "deploy:dry": "wrangler deploy --dry-run --config site/wrangler.jsonc",
+    "deploy": "wrangler deploy --config site/wrangler.jsonc"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
     "near-api-js": "7.5.1",
     "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.162.0"
   }
 }

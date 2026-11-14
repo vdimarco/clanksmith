@@ -3,7 +3,7 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createClanksmithServer } from "./clanksmith.mjs";
 
-const MCP_PATHS = new Set(["/mcp", "/"]);
+const MCP_PATHS = new Set(["/mcp", "/mcp/", "/"]);
 
 export function isMcpPath(pathname) {
   return MCP_PATHS.has(pathname);
