@@ -43,6 +43,7 @@ const planned = await hireFromMention("@clanksmith make me a logo, 0.2 NEAR", {
 });
 ok("dry run plans post, award, and accept", planned.phase === "accept" && planned.dryRun === true && dry.planned.map((p) => p.path).join(" ") === "/v1/jobs /v1/jobs/dry-run/award /v1/assignments/dry-run/accept");
 ok("the planned job names the on-chain contract", planned.job.description.includes("ee4994a509efa3cc516411e75f2633b2d8eac2d05fc30cc558bfd43329cde827"));
+ok("the planned job names the site", planned.job.description.includes("https://clanksmith.com"));
 
 const calls = [];
 function mockFetch(url, init) {

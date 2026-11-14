@@ -19,6 +19,7 @@ export function jobBody(mention, cfg) {
       `Mention: ${mention.raw}`,
       `Kind: ${mention.kind}`,
       `Spec: ${spec}`,
+      "Site: https://clanksmith.com",
       `On-chain contract: ${cfg.onChainContract} (${cfg.onChainNetwork})`,
       "Deliver Markdown with one ```json fence. The object is the work the NEAR contract checks.",
       "Clanksmith accepts the delivery only after that check passes.",
