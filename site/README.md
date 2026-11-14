@@ -4,11 +4,17 @@ This folder is the static site for `https://clanksmith.com/`. It has no build st
 
 - `index.html`, `motion.js`, `request.mjs` and `chain.js` are the landing page. `chain.js` reads the mainnet contract in the browser and shows its real counts.
 - `board/` is a copy of `../board/public/`. Do not edit it here. Change `board/public/`, then run `node scripts/build-site.mjs` from the repository root.
-- `_headers` holds the security headers and cache rules for Cloudflare.
+- `.assetsignore` lists files that are not published.
+- The security headers, cache rules and redirects are in `../worker/index.js`.
 
-Preview it from this folder with `python3 -m http.server 8000`.
+Preview it as production serves it with `npx wrangler dev` from the repository root.
 
-To publish, upload this whole folder to the Cloudflare project that serves the domain. The deploy route is not in this repository.
+## Deploy
+
+The Cloudflare Worker named `clanksmith` serves this folder. `../wrangler.jsonc` is its configuration.
+
+- By hand: run `npx wrangler deploy` from the repository root.
+- On each push to `main`: connect the Worker to this repository in the Cloudflare dashboard (Workers & Pages, `clanksmith`, Settings, Builds, Connect). Use branch `main`, root directory `/`, and deploy command `npx wrangler deploy`.
 
 ## Buyer request flow
 
