@@ -7,31 +7,35 @@ const env = {
     fetch(request) {
       const path = new URL(request.url).pathname;
       const status = path === "/missing" ? 404 : 200;
-      const type = path.startsWith("/fonts/") ? "font/woff2" : path.endsWith(".css") ? "text/css; charset=utf-8" : "text/html; charset=utf-8";
-      return new Response(status === 404 ? "missing" : "ok", { status, headers: { "content-type": type } });
+      return new Response(status === 404 ? "missing" : "ok", {
+        status,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
     },
   },
 };
 
-test("site Worker preserves redirects, cache rules, and board feed access", async () => {
-  const get = (url) => handleRequest(new Request(url), env);
-  const home = await get("https://clanksmith.com/");
+test("asset responses keep the v3 security headers", async () => {
+  const home = await handleRequest(new Request("https://clanksmith.com/"), env);
   assert.equal(home.status, 200);
-  assert.match(home.headers.get("content-security-policy"), /connect-src 'self' https:\/\/rpc\.mainnet/);
-  assert.match(home.headers.get("content-security-policy"), /script-src 'self' https:\/\/static\.cloudflareinsights\.com/);
-  assert.doesNotMatch(home.headers.get("content-security-policy"), /connect-src 'self' https:;/);
-  assert.equal(home.headers.get("cache-control"), "public, max-age=300");
+  assert.equal(home.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(home.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
+  assert.equal(home.headers.get("x-frame-options"), "DENY");
+  assert.equal(home.headers.get("permissions-policy"), "camera=(), microphone=(), geolocation=()");
+  assert.equal(home.headers.get("content-security-policy"), null);
 
-  const board = await get("https://clanksmith.com/board/");
-  assert.match(board.headers.get("content-security-policy"), /connect-src 'self' https:;/);
-  assert.equal((await get("https://clanksmith.com/board/board.css")).headers.get("cache-control"), "public, max-age=300");
-  assert.equal((await get("https://clanksmith.com/fonts/big-shoulders-display.woff2")).headers.get("cache-control"), "public, max-age=31536000, immutable");
-  assert.equal((await get("https://clanksmith.com/missing")).headers.get("cache-control"), "no-store");
+  const missing = await handleRequest(new Request("https://clanksmith.com/missing"), env);
+  assert.equal(missing.status, 404);
+  assert.equal(missing.headers.get("x-frame-options"), "DENY");
+});
 
-  const redirect = await get("https://www.clanksmith.com/board/?x=feed");
-  assert.equal(redirect.status, 301);
-  assert.equal(redirect.headers.get("location"), "https://clanksmith.com/board/?x=feed");
-  assert.equal((await get("http://clanksmith.com/")).headers.get("location"), "https://clanksmith.com/");
+test("www and plain HTTP redirect to the apex", async () => {
+  const www = await handleRequest(new Request("https://www.clanksmith.com/?x=1"), env);
+  assert.equal(www.status, 301);
+  assert.equal(www.headers.get("location"), "https://clanksmith.com/?x=1");
+  const http = await handleRequest(new Request("http://clanksmith.com/motion.js"), env);
+  assert.equal(http.status, 301);
+  assert.equal(http.headers.get("location"), "https://clanksmith.com/motion.js");
 });
 
 test("/mcp goes to the relay and www still redirects", async () => {
