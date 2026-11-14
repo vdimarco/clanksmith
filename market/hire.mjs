@@ -16,13 +16,14 @@ export function jobBody(mention, cfg) {
   return {
     title: mention.title.slice(0, 80),
     description: [
-      `Mention: ${mention.raw}`,
+      `Intent: ${mention.raw}`,
       `Kind: ${mention.kind}`,
       `Spec: ${spec}`,
       "Site: https://clanksmith.com",
       `On-chain contract: ${cfg.onChainContract} (${cfg.onChainNetwork})`,
       "Deliver Markdown with one ```json fence. The object is the work the NEAR contract checks.",
-      "Clanksmith accepts the delivery only after that check passes.",
+      "Solvers compete for this intent. Clanksmith pays on proof, after its own check passes.",
+      "User-owned AI.",
     ].join("\n"),
     budgetAmount: guide.toFixed(2),
     token: "USDC",

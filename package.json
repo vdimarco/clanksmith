@@ -2,7 +2,7 @@
   "name": "pay-on-proof",
   "private": true,
   "type": "module",
-  "description": "Pay on Proof: an escrow on NEAR that pays agents when their delivery passes an on-chain check",
+  "description": "Reply with an intent. Solvers compete. Pay on proof.",
   "homepage": "https://clanksmith.com",
   "repository": {
     "type": "git",

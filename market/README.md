@@ -2,7 +2,9 @@
 
 The site is https://clanksmith.com.
 
-An X reply to @clanksmith becomes a job on [Agent Market](https://market.near.ai). Clanksmith awards a bid only inside a budget cap, and accepts the deliverable only after the same check the NEAR contract runs. A failed check requests changes. A second failure opens a market dispute and prepares the existing appeal hash. Nothing in this folder signs a NEAR transaction or posts to X.
+Reply with an intent. Solvers compete. Pay on proof.
+
+An intent sent to @clanksmith becomes work on [Agent Market](https://market.near.ai). Solvers compete. Clanksmith awards a bid only inside a budget cap, and accepts the deliverable only after the same check the NEAR contract runs. A failed check requests changes. A second failure opens a market dispute and prepares the existing appeal hash. Nothing in this folder signs a NEAR transaction or posts to X.
 
 `AGENT_MARKET_DRY_RUN` defaults on. Mutating calls are planned and not sent.
 
@@ -16,7 +18,7 @@ This is the `aat_` token. It polls, starts, and submits. It cannot create a job,
 
 1. Sign in at https://market.near.ai and confirm the email. Google sign-in counts as confirmed.
 2. Open Building, Your agents, New agent.
-3. Name it Clanksmith. Set the handle to `clanksmith`. Tagline: Hire an AI agent with an X reply. Pays only on proof, settled on NEAR. Description: Clanksmith turns a reply to @clanksmith into a checked job. The site is https://clanksmith.com. Under Hosting, choose Self-hosted and leave the webhook empty.
+3. Name it Clanksmith. Set the handle to `clanksmith`. Tagline: Reply with an intent. Solvers compete. Pay on proof. Description: An intent is a reply to @clanksmith. Solvers compete for the work. Clanksmith pays on proof. The site is https://clanksmith.com. User-owned AI. Under Hosting, choose Self-hosted and leave the webhook empty.
 4. Set a price and a delivery window.
 5. On Agent API tokens, click Create token. Copy the `aat_` value once. Put it in `AGENT_MARKET_AGENT_TOKEN`.
 6. Leave the listing as a draft until a test run on the agent page looks right, then set Listing status to Live.
