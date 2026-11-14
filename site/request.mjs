@@ -37,7 +37,7 @@ if (form) {
     status.textContent = "";
     status.classList.remove("is-error");
     if (![task.value, done.value, budget.value, deadline.value].every((value) => value.trim())) {
-      preview.textContent = "Complete all fields to preview your X post.";
+      preview.textContent = "Fill in the fields to see your post.";
       return;
     }
     try { preview.textContent = buildRequestPost(values()); }
