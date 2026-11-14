@@ -13,6 +13,7 @@ import { apply } from "../service.mjs";
 import { createMarket } from "../../market/client.mjs";
 import { runDemo } from "../demo.mjs";
 import { buildAttempt } from "../../agents/solver.mjs";
+import { runFinishChecks } from "./finish.mjs";
 
 let fails = 0;
 const ok = (name, cond, extra = "") => {
@@ -22,6 +23,8 @@ const ok = (name, cond, extra = "") => {
 
 const NOW = "2026-11-14T08:00:00.000Z";
 const token = "aat_testtoken0123456789abcdef";
+
+runFinishChecks(ok);
 
 ok("dry run is the default", relayConfig({}).dryRun === true && relayConfig({}).liveWrites === false);
 ok("live writes need both switches", relayConfig({ CLANKSMITH_LIVE_WRITES: "true", AGENT_MARKET_DRY_RUN: "false" }).liveWrites === true);
@@ -61,11 +64,13 @@ const listed = await apply(state, "list_jobs", { payout_address: "demo.solver.ne
 state = listed.state;
 ok("list_jobs returns the open Clanksmith bounty only", listed.result.ok && listed.result.jobs.length === 1 && listed.result.jobs[0].jobId === "job-demo-1");
 ok("list_jobs carries reward, currency, deadline, and proof summary", listed.result.jobs[0].reward === "25.00" && listed.result.jobs[0].currency === "USDC" && listed.result.jobs[0].deadline.startsWith("2026-12-01") && /JSON blurb/.test(listed.result.jobs[0].proofSummary));
+ok("list_jobs defaults an unlabeled job to speed with metric and target", listed.result.jobs[0].mode === "speed" && listed.result.jobs[0].finish.metric === "score" && listed.result.jobs[0].finish.target === 80 && listed.result.jobs[0].finish.direction == null);
 ok("onboarding returns an agent id and no token", listed.result.agent.agentId === agentIdFor("demo.solver.near") && !JSON.stringify(listed.result).includes(token));
 ok("the board read used the agent token and did not write", board.calls.every((call) => call.method === "GET") && board.calls[0].auth === `Bearer ${token}`);
 
 const full = await apply(state, "get_job", { job_id: "job-demo-1", payout_address: "demo.solver.near" }, dry);
 ok("get_job returns the exact proof check", full.result.job.proof.checks[0].required.join() === "title,url" && /one entry per builder/.test(full.result.job.acceptance));
+ok("get_job exposes speed mode parameters", full.result.job.mode === "speed" && full.result.job.finish.target === 80 && /Speed mode/.test(full.result.job.acceptance));
 const hidden = await apply(state, "get_job", { job_id: "job-other" }, dry);
 ok("a bounty from another buyer is refused", hidden.result.ok === false);
 
@@ -104,6 +109,7 @@ ok("the same client request id does not add a second row", replay.result.replaye
 
 const again = await apply(state, "status", { job_id: "job-demo-1", payout_address: "demo.solver.near" }, dry);
 ok("status shows pass, score, and owed for the supplied address", again.result.submissions.length === 1 && again.result.submissions[0].proof.pass === true && again.result.submissions[0].payout.state === "owed");
+ok("speed status is won/closed once the target is hit", again.result.finish.status === "won/closed" && again.result.finish.mode === "speed" && again.result.finish.winner.submissionId === strong.result.submission.submissionId);
 ok("public status omits submitted work", !Object.hasOwn(again.result.submissions[0], "preview"));
 const peek = await apply(state, "status", { job_id: "job-demo-1", submission_id: strong.result.submission.submissionId, payout_address: "weak.solver.near" }, dry);
 ok("status does not reveal another agent's submission", peek.result.submissions.length === 0);
@@ -115,7 +121,7 @@ const lower = await apply(state, "submit", {
   urls: ["https://clanksmith.com"],
 }, dry);
 state = lower.state;
-ok("a lower score does not replace the forwarded entry", lower.result.preJudge.forwarded === false && state.forwards.filter((row) => !row.superseded).length === 1);
+ok("speed mode closes on the first hit, so a later submission is refused", lower.result.ok === false && /won and closed/.test(lower.result.error) && state.forwards.filter((row) => !row.superseded).length === 1);
 
 const ladderProof = {
   summary: "Two steps.",
@@ -133,7 +139,7 @@ const ladder = {
   budgetToken: "USDC",
   entriesCloseAt: "2026-12-01T00:00:00.000Z",
   tags: ["clanksmith"],
-  description: `Site: https://clanksmith.com\n\n\`\`\`clanksmith-proof\n${JSON.stringify(ladderProof)}\n\`\`\``,
+  description: `Site: https://clanksmith.com\nFinish: quality, score higher\n\n\`\`\`clanksmith-proof\n${JSON.stringify(ladderProof)}\n\`\`\``,
 };
 const ladderMock = mockFetch([ladder]);
 const ladderCtx = ctxFor(relayConfig({}), ladderMock.fetchImpl);
@@ -145,6 +151,43 @@ ladderState = secondPass.state;
 ok("a higher score replaces the forwarded entry", firstPass.result.preJudge.score === 50 && firstPass.result.preJudge.forwarded === true && secondPass.result.preJudge.score === 100 && secondPass.result.preJudge.forwarded === true);
 ok("the replacement does not enter the competition twice", secondPass.result.forward.calls.map((call) => call.path).join(" ") === "/v1/assignments/dry-run/submit");
 ok("only the new forward stays active", ladderState.forwards.filter((row) => !row.superseded).length === 1 && ladderState.forwards.find((row) => !row.superseded).submissionId === secondPass.result.submission.submissionId);
+ok("the ladder job is quality mode", secondPass.result.finish.mode === "quality" && secondPass.result.finish.direction === "higher" && secondPass.result.finish.status === "open" && secondPass.result.finish.leader.submissionId === secondPass.result.submission.submissionId && secondPass.result.finish.timeLeft != null);
+
+const qualityJob = {
+  jobId: "job-quality",
+  jobKind: "competition",
+  title: "Fewer errors",
+  budgetAmount: "40.00",
+  budgetToken: "USDC",
+  entriesCloseAt: "2026-11-20T00:00:00.000Z",
+  tags: ["clanksmith"],
+  description: "Site: https://clanksmith.com\nFinish: quality, errors lower\n",
+};
+const qualityMock = mockFetch([qualityJob]);
+let clock = Date.parse("2026-11-14T08:00:00.000Z");
+const qualityCtx = {
+  market: createMarket({ config: relayConfig({}), dryRun: true, fetchImpl: qualityMock.fetchImpl }),
+  config: relayConfig({}),
+  now: () => new Date(clock).toISOString(),
+};
+let qualityState = emptyState();
+clock = Date.parse("2026-11-14T08:00:00.000Z");
+const tieEarly = await apply(qualityState, "submit", { job_id: "job-quality", payout_address: "early.solver.near", text: "four errors", metric_value: 4 }, qualityCtx);
+qualityState = tieEarly.state;
+clock = Date.parse("2026-11-14T09:00:00.000Z");
+const tieLate = await apply(qualityState, "submit", { job_id: "job-quality", payout_address: "late.solver.near", text: "four errors too", metric_value: 4 }, qualityCtx);
+qualityState = tieLate.state;
+clock = Date.parse("2026-11-14T10:00:00.000Z");
+const fewerErrors = await apply(qualityState, "submit", { job_id: "job-quality", payout_address: "best.solver.near", text: "two errors", metric_value: 2 }, qualityCtx);
+qualityState = fewerErrors.state;
+ok("quality mode keeps the lower score in the lead before the deadline", fewerErrors.result.ok && fewerErrors.result.finish.status === "open" && fewerErrors.result.finish.leader.value === 2 && fewerErrors.result.finish.leader.submissionId === fewerErrors.result.submission.submissionId && fewerErrors.result.finish.timeLeftMs > 0);
+const afterDeadline = {
+  ...qualityCtx,
+  now: () => "2026-11-20T00:00:00.000Z",
+};
+const closedQuality = await apply(qualityState, "status", { job_id: "job-quality", payout_address: "early.solver.near" }, afterDeadline);
+ok("quality mode pays the best score at the deadline", closedQuality.result.finish.status === "closed" && closedQuality.result.finish.winner.value === 2 && closedQuality.result.finish.winner.submissionId === fewerErrors.result.submission.submissionId && closedQuality.result.finish.budget === "40.00" && closedQuality.result.finish.direction === "lower");
+ok("an equal quality score leaves the earlier submission ahead", tieLate.result.finish.leader.submissionId === tieEarly.result.submission.submissionId && tieLate.result.preJudge.forwarded === false);
 
 const approved = approvePayout(state, strong.result.submission.submissionId);
 ok("approval flips the row and moves no funds", approved.ok && approved.submission.payout.state === "approved" && approved.submission.payout.fundsMoved === false);

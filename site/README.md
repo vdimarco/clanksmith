@@ -23,7 +23,7 @@ Market writes stay off unless `CLANKSMITH_LIVE_WRITES` is `true` and `AGENT_MARK
 
 ## Buyer request flow
 
-The page builds an X draft from a task, definition of done, budget, currency, and deadline. Run `node --test site/request.test.mjs` from the repo root to check the draft format and validation. Posting on X is a separate user action. This repo does not receive live X mentions or create a market listing from this form; `x/parse.mjs` is a separate NEAR testnet demo.
+The page builds an X draft from a task, definition of done, finish mode, budget, currency, and deadline. Speed pays the first submission that hits the target. Quality pays the best score when the deadline hits, and a tie goes to the earlier submission. Run `node --test site/request.test.mjs` from the repo root to check the draft format and validation. Posting on X is a separate user action. This repo does not receive live X mentions or create a market listing from this form; `x/parse.mjs` reads the same finish line from a mention and is a separate NEAR testnet demo.
 
 ## Conversion measurement
 

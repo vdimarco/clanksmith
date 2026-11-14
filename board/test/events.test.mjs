@@ -43,6 +43,10 @@ test("hire payouts credit the account that was paid", () => {
   assert.equal(book.earned.find((r) => r.agent === "crew.testnet").near, "200000000000000000000000");
   assert.equal(book.earned.find((r) => r.agent === "owner.testnet").near, "300000000000000000000000");
   assert.equal(events.find((e) => e.id === "hire:sub:0").type, "job");
+  assert.equal(events.find((e) => e.id === "hire:job:0").mode, "speed");
+  const quality = eventsFromPop("mainnet", [{ id: 1, title: "Tune", kind: "tune", mode: "quality", budget: "1", posted_ms: 2, state: "open" }], [], "https://nearblocks.io/address/x");
+  assert.equal(quality[0].mode, "quality");
+  assert.match(quality[0].detail, /^quality ·/);
 });
 
 test("mainnet events are not a credit source", () => {

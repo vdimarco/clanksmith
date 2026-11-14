@@ -13,6 +13,13 @@ const ok = (name, cond) => { console.log(`${cond ? "ok  " : "FAIL"} ${name}`); i
 const logo = parseMention("@clanksmith make me a logo, 5 NEAR");
 ok("logo mention is paint at contrast 450", logo.kind === "paint" && logo.spec.contrast_x100 === 450 && logo.title === "logo");
 ok("logo budget is 5 NEAR", logo.budgetNear === 5 && logo.handle === "clanksmith");
+ok("a mention with no finish line defaults to speed", logo.mode === "speed" && logo.metric === "score" && logo.target === 80 && logo.direction == null);
+
+const quality = parseMention("@clanksmith make me a logo, 5 NEAR, quality, metric errors lower, by 2099-12-01");
+ok("a quality mention keeps the logo and sets lower-is-better", quality.kind === "paint" && quality.mode === "quality" && quality.metric === "errors" && quality.direction === "lower" && quality.deadline === "2099-12-01T00:00:00.000Z" && quality.finish.budget === "5.00");
+
+const aimed = parseMention("@clanksmith make me a logo, 5 NEAR, score >= 90");
+ok("a speed mention can raise the score target", aimed.mode === "speed" && aimed.metric === "score" && aimed.target === 90);
 
 const map = parseMention("@clanksmith a 3 room map, 0.2 NEAR");
 ok("map mention asks for 3 rooms", map.kind === "map" && map.spec.rooms === 3 && map.spec.cols === 4 && map.budgetNear === 0.2);

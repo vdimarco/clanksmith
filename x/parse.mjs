@@ -1,5 +1,7 @@
 // Turns one X mention into a Clanksmith job the contract can check.
 // "@clanksmith make me a logo, 5 NEAR" is a paint job with contrast 450 and a budget of 5.
+// A finish line, or the words speed/quality, sets how the job pays.
+import { resolveFinish } from "../relay/finish.mjs";
 
 const OPTIONS = [
   { re: /\blogo\b/, kind: "paint", title: "logo", spec: { contrast_x100: 450 } },
@@ -43,5 +45,33 @@ export function parseMention(text) {
   }
   if (!best) throw new Error("mention needs a logo, map, roster, or tune");
   const spec = best.kind === "map" ? mapSpec(body) : best.spec;
-  return { raw, handle: handle[1], budgetNear, kind: best.kind, title: best.title, spec };
+  const by = raw.match(/\bby\s+(\d{4}-\d{2}-\d{2})\b/i);
+  const goal = body.match(/(?:score|target)\s*(?:>=|of|at least)?\s*(\d+(?:\.\d+)?)/);
+  const wantsQuality = /\bquality\b/.test(body);
+  const metricName = (body.match(/\bmetric\s+([a-z][a-z0-9 ]{0,40}?)(?:\s+higher|\s+lower|,|$)/) || [])[1];
+  const metric = metricName ? metricName.trim() : "score";
+  const way = /\blower\b/.test(body) ? "lower" : "higher";
+  const finishLine = wantsQuality
+    ? `Finish: quality, ${metric} ${way}`
+    : `Finish: speed, ${metric} >= ${goal ? goal[1] : 80}`;
+  const finish = resolveFinish({
+    description: `${finishLine}\nBy: ${by ? by[1] : ""}\nBudget: ${budgetNear}`,
+    reward: String(budgetNear),
+    deadline: by ? `${by[1]}T00:00:00.000Z` : null,
+    proof: { minScore: 80 },
+  });
+  return {
+    raw,
+    handle: handle[1],
+    budgetNear,
+    kind: best.kind,
+    title: best.title,
+    spec,
+    mode: finish.mode,
+    metric: finish.metric,
+    target: finish.mode === "speed" ? finish.target : null,
+    direction: finish.mode === "quality" ? finish.direction : null,
+    deadline: finish.deadline,
+    finish,
+  };
 }

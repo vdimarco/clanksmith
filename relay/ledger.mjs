@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { identity } from "./address.mjs";
 import { scoreSubmission } from "./proof.mjs";
 import { executeForward, latestForward, planForwardCalls } from "./forward.mjs";
+import { compareRank, isPayableLeader, resolveFinish, selectWinner } from "./finish.mjs";
 
 const PER_JOB_CAP = 3;
 
@@ -76,17 +77,18 @@ function latestByAgent(rows) {
 }
 
 export function rankJob(state, job, now) {
+  const finish = job.finish || resolveFinish({ proof: job.proof, description: job.description, deadline: job.deadline, reward: job.reward });
   const rows = state.submissions.filter((row) => row.jobId === job.jobId);
   const latest = latestByAgent(rows);
-  const ranked = [...latest.values()].sort((a, b) => b.proof.score - a.proof.score || a.submittedAt.localeCompare(b.submittedAt) || a.submissionId.localeCompare(b.submissionId));
-  const best = ranked.find((row) => row.proof.pass) || null;
+  const ranked = [...latest.values()].sort((a, b) => compareRank(a, b, finish));
+  const outcome = selectWinner([...latest.values()], finish, now);
   for (const row of rows) {
     const current = latest.get(row.agentId);
     row.current = current?.submissionId === row.submissionId;
     row.rank = row.current ? ranked.findIndex((item) => item.submissionId === row.submissionId) + 1 : null;
     row.updatedAt = now;
   }
-  return best;
+  return outcome;
 }
 
 function settlePayouts(state, job, { best, forwardedId, holdId }) {
@@ -147,6 +149,7 @@ export async function recordSubmission(state, args, ctx, job) {
   if (!files.ok) return { ok: false, error: files.error, state };
 
   const now = ctx.now();
+  const finish = job.finish || resolveFinish({ proof: job.proof, description: job.description, deadline: job.deadline, reward: job.reward });
   const agent = { ...who.agent, createdAt: state.agents[who.agent.agentId]?.createdAt || now };
   const next = {
     ...state,
@@ -158,7 +161,13 @@ export async function recordSubmission(state, args, ctx, job) {
   const requestId = args.client_request_id ? String(args.client_request_id).slice(0, 80) : "";
   if (requestId) {
     const prior = next.submissions.find((row) => row.agentId === agent.agentId && row.jobId === job.jobId && row.clientRequestId === requestId);
-    if (prior) return { ok: true, state: next, submission: prior, replayed: true, forward: latestForward(next, job.jobId) };
+    if (prior) return { ok: true, state: next, submission: prior, replayed: true, forward: latestForward(next, job.jobId), finish };
+  }
+
+  const already = selectWinner(next.submissions.filter((row) => row.jobId === job.jobId), finish, now);
+  if (already.closed) {
+    const error = already.status === "won/closed" ? "This bounty is won and closed." : "This bounty is closed.";
+    return { ok: false, error, state };
   }
 
   const mine = next.submissions.filter((row) => row.agentId === agent.agentId && row.jobId === job.jobId);
@@ -167,6 +176,7 @@ export async function recordSubmission(state, args, ctx, job) {
   }
 
   const proof = scoreSubmission(job.proof, { text, urls: urls.links, files: files.links });
+  const metricRaw = Number(args.metric_value ?? args.metricValue);
   const submission = {
     submissionId: submissionId(),
     jobId: job.jobId,
@@ -179,6 +189,8 @@ export async function recordSubmission(state, args, ctx, job) {
     files: files.links,
     clientRequestId: requestId || null,
     submittedAt: now,
+    metricValue: Number.isFinite(metricRaw) ? metricRaw : null,
+    finish,
     proof,
     rank: null,
     current: true,
@@ -190,7 +202,9 @@ export async function recordSubmission(state, args, ctx, job) {
   const previousApproved = previous
     ? next.submissions.some((row) => row.submissionId === previous.submissionId && row.payout?.approval === "approved")
     : false;
-  const best = rankJob(next, job, now);
+  const outcome = rankJob(next, { ...job, finish }, now);
+  const leader = outcome.leader;
+  const best = isPayableLeader(leader, finish, outcome) ? leader : null;
 
   let forward = null;
   let forwardedId = previous?.ok ? previous.submissionId : null;
@@ -228,7 +242,7 @@ export async function recordSubmission(state, args, ctx, job) {
   }
   settlePayouts(next, job, { best, forwardedId, holdId });
 
-  return { ok: true, state: next, submission, replayed: false, forward, bestId: best?.submissionId || null };
+  return { ok: true, state: next, submission, replayed: false, forward, bestId: best?.submissionId || null, finish, outcome };
 }
 
 export function approvePayout(state, submissionId) {
