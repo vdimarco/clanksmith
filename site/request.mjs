@@ -68,7 +68,7 @@ if (form) {
     due.setDate(due.getDate() + 14);
     deadline.value = localDate(due);
     update();
-    status.textContent = "Illustrative brief only. Edit it for your job; the budget is not a quote.";
+    status.textContent = "That's just an example. Change it to your job; the budget isn't a quote.";
     task.focus();
   });
   update();
