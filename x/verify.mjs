@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 // Re-reads the X hire run from testnet. No key.
-//   node pop/x/verify.mjs
+//   node x/verify.mjs
 import fs from "node:fs";
 import { evidenceHash, policyHash } from "../appeals/lib/hash.mjs";
 import { feedErrors } from "./events.mjs";
 
 const RUN_PATH = new URL("./run.json", import.meta.url);
 const FEED_PATH = new URL("./events.json", import.meta.url);
-const THREAD_PATH = new URL("../../public/x/thread.html", import.meta.url);
+const THREAD_PATH = new URL("../public/x/thread.html", import.meta.url);
 const PUBLISHED = "dev-20261111042208-14186395012630.testnet";
 const MAINNET = "ee4994a509efa3cc516411e75f2633b2d8eac2d05fc30cc558bfd43329cde827";
 const RPC = "https://rpc.testnet.fastnear.com";
 const ARCHIVAL = "https://archival-rpc.testnet.fastnear.com";
 const EXPLORER = "https://testnet.nearblocks.io";
 
-if (!fs.existsSync(RUN_PATH)) { console.error("missing pop/x/run.json"); process.exit(2); }
+if (!fs.existsSync(RUN_PATH)) { console.error("missing x/run.json"); process.exit(2); }
 const run = JSON.parse(fs.readFileSync(RUN_PATH, "utf8"));
 const feed = JSON.parse(fs.readFileSync(FEED_PATH, "utf8"));
 const thread = fs.readFileSync(THREAD_PATH, "utf8");

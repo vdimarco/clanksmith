@@ -1,8 +1,8 @@
 # Hire from a reply
 
-Testnet only. A person replies on X. The parser accepts `@payonproof make me a logo, 5 NEAR`. This deployment's cap is 1 NEAR, so the recorded jobs are 0.2 NEAR each. The mention becomes a job. The person funds it in the browser. Two agents bid. The appeals contract checks the delivery. A pass pays in that transaction. A fail can be disputed, and the Lock jury rules.
+Testnet only. A person replies on X. The parser accepts `@clanksmith make me a logo, 5 NEAR`. This deployment's cap is 1 NEAR, so the recorded jobs are 0.2 NEAR each. The mention becomes a job. The person funds it in the browser. Two agents bid. The appeals contract checks the delivery. A pass pays in that transaction. A fail can be disputed, and the Lock jury rules.
 
-The appeal contract is in `pop/appeals/`. `pop/hire/` is the parent and sub-account contract from main. The X bidders are separate accounts, not that parent and sub-account.
+The appeal contract is in `appeals/`. `hire/` is the parent and sub-account contract from main. The X bidders are separate accounts, not that parent and sub-account.
 
 The mainnet contract is not signed and its code is not changed.
 
@@ -12,15 +12,15 @@ The mainnet contract is not signed and its code is not changed.
 | --- | --- |
 | Open the thread replay at `public/x/thread.html` | The mention, then each reply the bot would post, with a testnet transaction link. The page says it is a dry run. |
 | Open the funding page at `public/x/index.html` | A phone-width page. Create a key in the browser. The recorded funding transaction is on the page. |
-| `node pop/x/verify.mjs` | Every line starts with `ok`, then `all checks passed`, then three transaction links: funding, payment, ruling. No key. |
-| `node pop/x/test/all.mjs` | The parser, the dry run, the refusal of `proto_von`, and the mainnet refusal. No network. |
-| `node pop/scripts/verify.mjs mainnet` | `all 14 checks passed`. |
+| `node x/verify.mjs` | Every line starts with `ok`, then `all checks passed`, then three transaction links: funding, payment, ruling. No key. |
+| `node x/test/all.mjs` | The parser, the dry run, the refusal of `proto_von`, and the mainnet refusal. No network. |
+| `node scripts/verify.mjs mainnet` | `all 14 checks passed`. |
 
-`node pop/x/run.mjs` repeats the live testnet run with new faucet accounts. It refuses `mainnet`. Secrets stay in `pop/x/.keys/`, which git ignores.
+`node x/run.mjs` repeats the live testnet run with new faucet accounts. It refuses `mainnet`. Secrets stay in `x/.keys/`, which git ignores.
 
 ## This run
 
-Recorded on 13 November 2026. `node pop/x/verify.mjs` reads these from the chain.
+Recorded on 13 November 2026. `node x/verify.mjs` reads these from the chain.
 
 | | |
 | --- | --- |
@@ -54,7 +54,7 @@ The recorded funding transaction is a transfer signed by the requester:
 
 ## What live X posting needs
 
-The run does not post to X. `pop/x/reply.mjs` will post only when it is called with `dryRun: false` and all of these are set for a dedicated bot account. Do not use `proto_von`. This run does not create the bot.
+The run does not post to X. `x/reply.mjs` will post only when it is called with `dryRun: false` and all of these are set for a dedicated bot account. Do not use `proto_von`. This run does not create the bot.
 
 - `X_API_KEY`: the app's consumer key
 - `X_API_SECRET`: the app's consumer secret
@@ -67,7 +67,7 @@ The app needs OAuth 1.0a with read and write on the bot user. The call is `POST 
 
 ## Event feed
 
-`public/x/events.json` is the feed for `pop/board/`. The field list is in `EVENTS.md`.
+`public/x/events.json` is the feed for `board/`. The field list is in `EVENTS.md`.
 
 ## Demo
 

@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 const { chromium } = createRequire(import.meta.url)("playwright");
 
-const out = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : new URL("./pay-on-proof.mp4", import.meta.url).pathname;
+const out = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : new URL("./clanksmith.mp4", import.meta.url).pathname;
 const fps = Number(process.argv.includes("--fps") ? process.argv[process.argv.indexOf("--fps") + 1] : 30);
 const data = JSON.parse(fs.readFileSync(new URL("./data.json", import.meta.url), "utf8"));
 const browser = await chromium.launch();

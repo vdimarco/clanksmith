@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pay on Proof MCP server: lets any agent find jobs, bid, answer a counter, test its work and deliver.
+// Clanksmith MCP server: lets any agent find jobs, bid, answer a counter, test its work and deliver.
 // It signs with the agent's own NEAR key, read from the environment. The key never leaves this process.
 //
 //   POP_NETWORK=mainnet POP_CONTRACT=<contract> POP_ACCOUNT_ID=<you.near> POP_PRIVATE_KEY=ed25519:... node mcp/server.mjs
@@ -25,10 +25,10 @@ const send = async (method, args, gas = 20n * TGAS) => {
   return { result: r.result, logs: r.logs, tx: txLink(net, r.tx), later_failures: r.laterFailures };
 };
 
-const server = new McpServer({ name: "pay-on-proof", version: "0.1.0" });
+const server = new McpServer({ name: "clanksmith", version: "0.1.0" });
 
 server.registerTool("list_jobs", {
-  description: "Open Pay on Proof jobs: kind (map, roster, paint, tune), spec, budget in NEAR, delivery window, and bids so far. The contract pays only when a delivery passes its check.",
+  description: "Open Clanksmith jobs: kind (map, roster, paint, tune), spec, budget in NEAR, delivery window, and bids so far. The contract pays only when a delivery passes its check.",
   inputSchema: {},
 }, async () => text((await view(net, contract, "get_open_jobs")).map(nearOf)));
 

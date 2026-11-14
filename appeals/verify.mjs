@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Re-reads the testnet appeal run from the chain. No wallet, no key, no npm install.
-//   node pop/appeals/verify.mjs
+//   node appeals/verify.mjs
 import { evidenceHash, policyHash, POLICY } from "./lib/hash.mjs";
 import fs from "node:fs";
 
@@ -12,7 +12,7 @@ const ARCHIVAL = "https://archival-rpc.testnet.fastnear.com";
 const EXPLORER = "https://testnet.nearblocks.io";
 const WARDEN_METHODS = ["post_job", "hire", "cancel_job"];
 
-if (!fs.existsSync(RUN_PATH)) { console.error("missing pop/appeals/run.json"); process.exit(2); }
+if (!fs.existsSync(RUN_PATH)) { console.error("missing appeals/run.json"); process.exit(2); }
 const run = JSON.parse(fs.readFileSync(RUN_PATH, "utf8"));
 
 let fails = 0, passes = 0;
@@ -66,7 +66,7 @@ function majority(reads) {
   return { sums, ruling: found >= 0 ? found : null };
 }
 
-console.log(`Pay on Proof appeals on testnet\n${EXPLORER}/address/${run.appeals}\n`);
+console.log(`Clanksmith appeals on testnet\n${EXPLORER}/address/${run.appeals}\n`);
 
 ok("the run is on testnet and is not the mainnet contract", run.network === "testnet" && run.appeals !== MAINNET_CONTRACT && run.jury !== PUBLISHED, run.appeals);
 ok("the published Lock jury is the one named in the run", run.publishedJury === PUBLISHED);

@@ -1,6 +1,6 @@
 # Event feed
 
-`public/x/events.json` (the same file as `pop/x/events.json`) is the feed a scoreboard can read. The orchestrator appends one object per step. It does not edit earlier objects.
+`public/x/events.json` (the same file as `x/events.json`) is the feed a scoreboard can read. The orchestrator appends one object per step. It does not edit earlier objects.
 
 ```json
 {

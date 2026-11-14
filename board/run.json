@@ -194,5 +194,5 @@
     "funder-c funder-c-mwfii780.testnet ed25519:7tDysCrTFdQF5EN4TQe7Y5RWR7F9Cmy37Gkxh7yiYLYG",
     "worker worker-mwfiiauj.testnet ed25519:CZEqzxofNYgdxZakaerBDnSEf8vvkE5L83sDThztXUed"
   ],
-  "secrets": "pop/board/.keys/testnet.json is gitignored. It holds the testnet secrets for the accounts above, including the deleted full-access secrets of the credit contract and the pool."
+  "secrets": "board/.keys/testnet.json is gitignored. It holds the testnet secrets for the accounts above, including the deleted full-access secrets of the credit contract and the pool."
 }

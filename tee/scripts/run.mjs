@@ -1,7 +1,7 @@
 // Deploys the testnet TEE escrow, runs one passing delivery and one failing delivery, then locks the account.
-// Testnet only. Refuses any other network. Keys stay in pop/tee/.keys/, which git ignores.
+// Testnet only. Refuses any other network. Keys stay in tee/.keys/, which git ignores.
 //
-//   node pop/tee/scripts/run.mjs testnet
+//   node tee/scripts/run.mjs testnet
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -11,14 +11,14 @@ import { sha256hex } from "../lib/message.mjs";
 import { sealDelivery } from "../lib/box.mjs";
 
 const net = process.argv[2];
-if (net !== "testnet") { console.error("usage: node pop/tee/scripts/run.mjs testnet"); process.exit(2); }
+if (net !== "testnet") { console.error("usage: node tee/scripts/run.mjs testnet"); process.exit(2); }
 const RPC = NETS.testnet.rpc;
 if (!RPC.includes("testnet")) { console.error("refusing a non-testnet RPC"); process.exit(2); }
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const KEYS = path.join(ROOT, ".keys", "testnet.json");
 const GUEST = path.join(ROOT, "checker", "pop-tee-checker.wasm");
-const CONTRACT_WASM = path.join(ROOT, "contract", "target", "wasm32-unknown-unknown", "release", "pay_on_proof_tee.wasm");
+const CONTRACT_WASM = path.join(ROOT, "contract", "target", "wasm32-unknown-unknown", "release", "clanksmith_tee.wasm");
 const OUTLAYER = "outlayer.testnet";
 const WARDEN_METHODS = ["post_job", "hire", "cancel_job"];
 const GOOD = '{"rooms":[[0,0],[1,0],[1,1]],"links":[[[0,0],[1,0]],[[1,0],[1,1]]],"entry":[0,0],"exit":[1,1]}';
@@ -229,7 +229,7 @@ async function main() {
   };
   fs.writeFileSync(path.join(ROOT, "deployment.json"), JSON.stringify(deployment, null, 2) + "\n");
   console.log(accountLink("testnet", contract.accountId));
-  console.log("wrote pop/tee/deployment.json");
+  console.log("wrote tee/deployment.json");
 }
 
 main().catch((e) => { console.error(e.stack || e.message || e); process.exit(1); });

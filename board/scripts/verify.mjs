@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Read-only check of the Pay on Proof board. No key and no install.
-//   node pop/board/scripts/verify.mjs
+// Read-only check of the Clanksmith board. No key and no install.
+//   node board/scripts/verify.mjs
 import fs from "node:fs";
 import { collect } from "../public/chain.mjs";
 import { counts, leaderboards, parseXFeed } from "../public/events.mjs";

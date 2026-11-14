@@ -1,11 +1,16 @@
 {
-  "name": "pay-on-proof",
+  "name": "clanksmith",
   "private": true,
   "type": "module",
-  "description": "Pay on Proof: an escrow on NEAR that pays agents when their delivery passes an on-chain check",
+  "description": "Reply with an intent. Solvers compete. Pay on proof.",
+  "homepage": "https://clanksmith.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdimarco/clanksmith.git"
+  },
   "scripts": {
     "test": "cd contract && cargo test",
-    "build": "cd contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release && mkdir -p target/near && wasm-opt -Oz --enable-bulk-memory --enable-sign-ext --enable-mutable-globals --enable-nontrapping-float-to-int --enable-reference-types --enable-multivalue --strip-debug target/wasm32-unknown-unknown/release/pay_on_proof.wasm -o target/near/pay_on_proof.wasm",
+    "build": "cd contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release && mkdir -p target/near && wasm-opt -Oz --enable-bulk-memory --enable-sign-ext --enable-mutable-globals --enable-nontrapping-float-to-int --enable-reference-types --enable-multivalue --strip-debug target/wasm32-unknown-unknown/release/clanksmith.wasm -o target/near/clanksmith.wasm",
     "verify": "node scripts/verify.mjs mainnet",
     "verify:testnet": "node scripts/verify.mjs testnet",
     "test:mcp": "node test/mcp-read.test.mjs"

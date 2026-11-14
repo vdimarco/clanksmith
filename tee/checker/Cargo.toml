@@ -1,5 +1,5 @@
 [package]
-name = "pop-tee-checker"
+name = "clanksmith-tee-checker"
 version = "0.1.0"
 edition = "2021"
 publish = false

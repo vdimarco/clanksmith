@@ -1,4 +1,4 @@
-// Keys for the hire run. Git ignores pop/hire/.keys. Nothing here logs a secret.
+// Keys for the hire run. Git ignores hire/.keys. Nothing here logs a secret.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

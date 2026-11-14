@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Checks a live Pay on Proof deployment from the chain alone. Read-only: no wallet, no key, no npm install.
+// Checks a live Clanksmith deployment from the chain alone. Read-only: no wallet, no key, no npm install.
 // It needs Node 18 or newer, for fetch and WebAssembly.
 //
-//   node pop/scripts/verify.mjs            the mainnet contract
-//   node pop/scripts/verify.mjs testnet    the testnet contract
+//   node scripts/verify.mjs            the mainnet contract
+//   node scripts/verify.mjs testnet    the testnet contract
 //
 // Each line starts with "ok" or "FAIL". The script exits 1 if any check fails.
 import fs from "node:fs";
@@ -32,7 +32,7 @@ const NETS = {
 const WARDEN_METHODS = ["post_job", "counter", "hire", "cancel_job", "retry_payout", "unwrap_near"];
 const net = process.argv[2] || "mainnet";
 const N = NETS[net];
-if (!N) { console.error("usage: node pop/scripts/verify.mjs [mainnet|testnet]"); process.exit(2); }
+if (!N) { console.error("usage: node scripts/verify.mjs [mainnet|testnet]"); process.exit(2); }
 const C = process.env.POP_CONTRACT || N.contract;
 
 let fails = 0, passes = 0;
@@ -58,7 +58,7 @@ const view = async (account_id, method_name, args = {}) => {
 };
 const all = async (method) => { const out = []; for (let from = 0; ; from += 50) { const p = await view(C, method, { from, limit: 50 }); out.push(...p); if (p.length < 50) return out; } };
 
-console.log(`Pay on Proof on ${net}: ${C}\n${N.explorer}/address/${C}\n`);
+console.log(`Clanksmith on ${net}: ${C}\n${N.explorer}/address/${C}\n`);
 
 // 1. Who can act for the contract
 const keys = (await rpc("query", { request_type: "view_access_key_list", finality: "final", account_id: C })).keys;
@@ -88,7 +88,7 @@ if (fs.existsSync(libPath)) {
   ok("the deployed methods are exactly the public methods in contract/src/lib.rs", JSON.stringify(pub) === JSON.stringify(exportsOnChain), `${exportsOnChain.length} methods`);
 }
 const meta = await view(C, "contract_source_metadata").catch(() => null);
-ok("NEP-330 source metadata points at this repository", !!meta && meta.link === "https://github.com/vdimarco/rouge-warden", meta ? `${meta.link} v${meta.version}` : "none");
+ok("deployed NEP-330 link is still the rouge-warden source", !!meta && meta.link === "https://github.com/vdimarco/rouge-warden", meta ? `${meta.link} v${meta.version}` : "none");
 
 // 3. Money: the cap and the books
 const cfg = await view(C, "get_config");

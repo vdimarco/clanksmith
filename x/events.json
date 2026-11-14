@@ -12,7 +12,7 @@
       "tx_url": "https://testnet.nearblocks.io/txns/2vpWzLTsv9wvGoX7F7HoVeS8RnuUZ2knLJy2TnWsgqQp",
       "account": "bda3be3a43610a19943fb49f5037af23e4dcd57ca668d70b08ba1ff4aa7c0cd6",
       "data": {
-        "mention": "@payonproof make me a logo, 0.2 NEAR",
+        "mention": "@clanksmith make me a logo, 0.2 NEAR",
         "kind": "paint",
         "title": "logo",
         "spec": {
@@ -102,7 +102,7 @@
       "tx_url": "https://testnet.nearblocks.io/txns/4eCpfT4BTEsPdFYswLTXCZmGK62TQViQgompK8bcxpL2",
       "account": "bda3be3a43610a19943fb49f5037af23e4dcd57ca668d70b08ba1ff4aa7c0cd6",
       "data": {
-        "mention": "@payonproof a 3 room map, 0.2 NEAR",
+        "mention": "@clanksmith a 3 room map, 0.2 NEAR",
         "kind": "map",
         "title": "map",
         "spec": {

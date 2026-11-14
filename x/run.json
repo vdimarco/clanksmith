@@ -9,8 +9,8 @@
   "clay": "xclay-mwfilcm0.testnet",
   "wardenPublicKey": "ed25519:CKoHMvduRiCJdF3YNvLWMTVx4duTEW23WbA6MP7Gsqfg",
   "mentions": [
-    "@payonproof make me a logo, 0.2 NEAR",
-    "@payonproof a 3 room map, 0.2 NEAR"
+    "@clanksmith make me a logo, 0.2 NEAR",
+    "@clanksmith a 3 room map, 0.2 NEAR"
   ],
   "fundNear": "0.6",
   "fundYocto": "600000000000000000000000",

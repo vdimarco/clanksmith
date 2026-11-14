@@ -93,6 +93,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "clanksmith-tee-checker"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "chacha20poly1305",
+ "getrandom",
+ "hex",
+ "serde_json",
+ "sha2",
+ "wit-bindgen",
+ "x25519-dalek",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -286,20 +300,6 @@ dependencies = [
  "cpufeatures",
  "opaque-debug",
  "universal-hash",
-]
-
-[[package]]
-name = "pop-tee-checker"
-version = "0.1.0"
-dependencies = [
- "base64",
- "chacha20poly1305",
- "getrandom",
- "hex",
- "serde_json",
- "sha2",
- "wit-bindgen",
- "x25519-dalek",
 ]
 
 [[package]]

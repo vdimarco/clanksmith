@@ -1,4 +1,4 @@
-//! Testnet credit score for Pay on Proof.
+//! Testnet credit score for Clanksmith.
 //!
 //! Scores come from cross-contract reads of the locked hire contract and the locked appeals
 //! contract. A caller cannot submit a pass, a fail, or a jury result. The mainnet escrow is not

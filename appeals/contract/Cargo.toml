@@ -1,10 +1,10 @@
 [package]
-name = "pay-on-proof-appeals"
+name = "clanksmith-appeals"
 version = "0.1.0"
 edition = "2021"
-description = "Testnet escrow that pays a failed Pay on Proof delivery only after a Lock jury ruling"
+description = "Testnet escrow that pays a failed Clanksmith delivery only after a Lock jury ruling"
 license = "MIT"
-repository = "https://github.com/vdimarco/rouge-warden"
+repository = "https://github.com/vdimarco/clanksmith"
 publish = false
 
 [lib]
