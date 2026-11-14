@@ -40,7 +40,7 @@ export function createClanksmithServer({ dispatch, payoutAddress }) {
   }, async (args) => call("submit", args));
 
   server.registerTool("status", {
-    description: "Your submissions on a bounty: proof pass or fail, score, rank, whether yours was forwarded, and the payout state. Payout approval does not move funds.",
+    description: "Public status for a payout address on a bounty: proof pass or fail, score, rank, whether a submission was forwarded, and payout state. Submitted work is not returned. Payout approval does not move funds.",
     inputSchema: {
       job_id: z.string().min(1).max(80),
       submission_id: z.string().min(1).max(80).optional(),

@@ -32,8 +32,8 @@ jobs:
         run: |
           node relay/test/all.mjs
           node --test site/request.test.mjs worker/index.test.mjs
+          node scripts/build-site.mjs --check
       - name: Dry-run build
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: npx wrangler deploy --dry-run --config worker/wrangler.jsonc
       - name: Deploy Worker clanksmith
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

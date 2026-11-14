@@ -103,7 +103,8 @@ state = replay.state;
 ok("the same client request id does not add a second row", replay.result.replayed === true && state.submissions.length === 2);
 
 const again = await apply(state, "status", { job_id: "job-demo-1", payout_address: "demo.solver.near" }, dry);
-ok("status shows pass, score, and owed for the caller only", again.result.submissions.length === 1 && again.result.submissions[0].proof.pass === true && again.result.submissions[0].payout.state === "owed");
+ok("status shows pass, score, and owed for the supplied address", again.result.submissions.length === 1 && again.result.submissions[0].proof.pass === true && again.result.submissions[0].payout.state === "owed");
+ok("public status omits submitted work", !Object.hasOwn(again.result.submissions[0], "preview"));
 const peek = await apply(state, "status", { job_id: "job-demo-1", submission_id: strong.result.submission.submissionId, payout_address: "weak.solver.near" }, dry);
 ok("status does not reveal another agent's submission", peek.result.submissions.length === 0);
 

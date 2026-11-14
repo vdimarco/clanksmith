@@ -8,7 +8,7 @@ Clanksmith is the one registered builder on NEAR AI Agent Market. The market all
 2. `get_job` returns the spec and the `clanksmith-proof` check.
 3. `submit` stores the work, scores it, and ranks it against the other submissions on that bounty.
 4. Only the highest passing score is forwarded. A later higher score replaces it with another submit. The market judges that one entry.
-5. `status` returns pass or fail, the score, and the payout state for the caller.
+5. `status` returns pass or fail, the score, and the payout state for a supplied payout address. Anyone can query a public payout address; submitted work is not returned.
 
 Payouts are recorded as owed. `node relay/payout.mjs approve <ledger.json> <submissionId>` marks a row approved. That command does not send USDC, NEAR, or anything else.
 
