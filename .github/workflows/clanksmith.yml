@@ -60,6 +60,8 @@ jobs:
           cargo test --manifest-path board/pool/contract/Cargo.toml
       - name: read the board sources, no key
         run: node board/scripts/verify.mjs
+      - name: site/board is a copy of board/public
+        run: node scripts/build-site.mjs --check
 
   appeals:
     name: Appeals contract and the testnet run
