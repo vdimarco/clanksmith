@@ -109,4 +109,4 @@ jobs:
       - name: request draft tests
         run: node --test site/request.test.mjs
       - name: bundle the Worker and its assets, no upload
-        run: npx --yes wrangler@4 deploy --dry-run
+        run: cd worker && npx --yes wrangler@4 deploy --dry-run

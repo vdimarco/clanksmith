@@ -1,11 +1,11 @@
 {
-  // Deploys the static site in ./site to the Worker that serves clanksmith.com.
+  // Deploys the static site in ../site to the Worker that serves clanksmith.com.
   // The name must match the Worker in the Cloudflare dashboard.
   "name": "clanksmith",
-  "main": "./worker/index.js",
+  "main": "./index.js",
   "compatibility_date": "2026-11-01",
   "assets": {
-    "directory": "./site",
+    "directory": "../site",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
     "run_worker_first": true

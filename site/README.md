@@ -7,14 +7,14 @@ This folder is the static site for `https://clanksmith.com/`. It has no build st
 - `.assetsignore` lists files that are not published.
 - The security headers, cache rules and redirects are in `../worker/index.js`.
 
-Preview it as production serves it with `npx wrangler dev` from the repository root.
+Preview it as production serves it with `npx wrangler dev` from the `worker/` folder.
 
 ## Deploy
 
-The Cloudflare Worker named `clanksmith` serves this folder. `../wrangler.jsonc` is its configuration.
+The Cloudflare Worker named `clanksmith` serves this folder. `../worker/wrangler.jsonc` is its configuration. The `wrangler.jsonc` in the repository root belongs to a different Worker, `clanksmith-mcp`.
 
-- By hand: run `npx wrangler deploy` from the repository root.
-- On each push to `main`: connect the Worker to this repository in the Cloudflare dashboard (Workers & Pages, `clanksmith`, Settings, Builds, Connect). Use branch `main`, root directory `/`, and deploy command `npx wrangler deploy`.
+- By hand: run `npx wrangler deploy` from the `worker/` folder.
+- On each push to `main`: connect the Worker to this repository in the Cloudflare dashboard (Workers & Pages, `clanksmith`, Settings, Builds, Connect). Use branch `main`, root directory `/worker`, and deploy command `npx wrangler deploy`.
 
 ## Buyer request flow
 
