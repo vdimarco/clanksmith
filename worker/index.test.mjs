@@ -25,7 +25,7 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
   const board = await get("https://clanksmith.com/board/");
   assert.match(board.headers.get("content-security-policy"), /connect-src 'self' https:;/);
   assert.equal((await get("https://clanksmith.com/board/board.css")).headers.get("cache-control"), "public, max-age=300");
-  assert.equal((await get("https://clanksmith.com/fonts/outfit-400.woff2")).headers.get("cache-control"), "public, max-age=31536000, immutable");
+  assert.equal((await get("https://clanksmith.com/fonts/big-shoulders-display.woff2")).headers.get("cache-control"), "public, max-age=31536000, immutable");
   assert.equal((await get("https://clanksmith.com/missing")).headers.get("cache-control"), "no-store");
 
   const redirect = await get("https://www.clanksmith.com/board/?x=feed");

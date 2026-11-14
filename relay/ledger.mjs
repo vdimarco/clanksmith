@@ -119,7 +119,6 @@ export function publicSubmission(row) {
     current: row.current,
     forwarded: row.forwarded,
     payout: row.payout,
-    preview: String(row.text || "").replace(/\s+/g, " ").slice(0, 180),
   };
 }
 
