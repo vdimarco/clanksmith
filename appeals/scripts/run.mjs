@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Testnet only. One failed delivery that the jury pays, and one that it refunds.
-// Full-access keys are deleted at the end. Secrets stay in pop/appeals/.keys/, which git ignores.
-//   node pop/appeals/scripts/run.mjs
+// Full-access keys are deleted at the end. Secrets stay in appeals/.keys/, which git ignores.
+//   node appeals/scripts/run.mjs
 import fs from "node:fs";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -16,7 +16,7 @@ if (process.argv.includes("mainnet") || process.env.POP_NETWORK === "mainnet") {
 const net = "testnet";
 const STATE = fileURLToPath(new URL("../.keys/state.json", import.meta.url));
 const RUN = fileURLToPath(new URL("../run.json", import.meta.url));
-const WASM = fileURLToPath(new URL("../contract/target/wasm32-unknown-unknown/release/pay_on_proof_appeals.wasm", import.meta.url));
+const WASM = fileURLToPath(new URL("../contract/target/wasm32-unknown-unknown/release/clanksmith_appeals.wasm", import.meta.url));
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 function load() {

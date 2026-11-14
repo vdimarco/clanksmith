@@ -1,0 +1,96 @@
+# Clanksmith: contract tests, and read-only checks of the live mainnet contract.
+# Nothing here signs a transaction or needs a key.
+name: clanksmith
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustc --version
+      - name: cargo test
+        run: cargo test --manifest-path contract/Cargo.toml
+      - name: hire contract tests
+        run: cargo test --manifest-path hire/contract/Cargo.toml
+
+  mainnet:
+    name: Read the live mainnet contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: verify.mjs (no install, no key)
+        run: node scripts/verify.mjs mainnet
+      - name: MCP server read tools, no key
+        run: npm ci --no-audit --no-fund && node test/mcp-read.test.mjs
+
+  board:
+    name: Board score, contracts, and live read
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rust
+        run: rustup toolchain install stable --profile minimal
+      - name: score and event tests
+        run: node --test board/test/*.test.mjs
+      - name: credit and pool contracts
+        run: |
+          cargo test --manifest-path board/credit/contract/Cargo.toml
+          cargo test --manifest-path board/pool/contract/Cargo.toml
+      - name: read the board sources, no key
+        run: node board/scripts/verify.mjs
+      - name: site/board is a copy of board/public
+        run: node scripts/build-site.mjs --check
+
+  appeals:
+    name: Appeals contract and the testnet run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustc --version
+      - name: cargo test
+        run: cargo test --manifest-path appeals/contract/Cargo.toml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: hash vectors
+        run: node appeals/test/hash.test.mjs
+      - name: read the testnet appeal run, no key
+        run: node appeals/verify.mjs
+
+  x-hire:
+    name: X hire unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: parser, dry run, fund guard
+        run: npm ci --no-audit --no-fund && node x/test/all.mjs

@@ -1,4 +1,4 @@
-//! A Pay on Proof job whose hired agent hires one more agent.
+//! A Clanksmith job whose hired agent hires one more agent.
 //!
 //! The parent holds a function-call key on this contract and no full-access key. Its hire price is a
 //! hard cap: a sub-job that would pass it panics. The sub-agent must be a sub-account of the parent.

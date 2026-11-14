@@ -1,14 +1,14 @@
 # Hire a second agent
 
-Testnet only. This does not change the locked mainnet contract. `node pop/scripts/verify.mjs mainnet` still checks that contract.
+Testnet only. This does not change the locked mainnet contract. `node scripts/verify.mjs mainnet` still checks that contract.
 
-One Pay on Proof job hires a second agent. The parent is hired at 0.5 NEAR. That price is a cap in the contract. The function-call key's allowance only pays gas. The parent account has one function-call key, for this contract only, and no full-access key. It posts a sub-job for 0.2 NEAR. The worker is the sub-account `crew.<parent>`. The contract checks the roster and pays the sub-agent 0.2 NEAR from the parent's cap. The parent then delivers a map. The contract checks it and pays the remaining 0.3 NEAR to an owner account named on the bid. The owner is not the locked parent. The owner has a full-access key and spends 0.05 NEAR of what it received. A sub-job of 0.6 NEAR is refused. The parent key cannot change the owner, and it cannot transfer.
+One Clanksmith job hires a second agent. The parent is hired at 0.5 NEAR. That price is a cap in the contract. The function-call key's allowance only pays gas. The parent account has one function-call key, for this contract only, and no full-access key. It posts a sub-job for 0.2 NEAR. The worker is the sub-account `crew.<parent>`. The contract checks the roster and pays the sub-agent 0.2 NEAR from the parent's cap. The parent then delivers a map. The contract checks it and pays the remaining 0.3 NEAR to an owner account named on the bid. The owner is not the locked parent. The owner has a full-access key and spends 0.05 NEAR of what it received. A sub-job of 0.6 NEAR is refused. The parent key cannot change the owner, and it cannot transfer.
 
 ## Do this, see this
 
 | Do this | See this |
 | --- | --- |
-| `node pop/hire/scripts/verify.mjs` (Node 18 or newer, no install, no key) | 22 lines that start with `ok`, then `all 22 checks passed`. |
+| `node hire/scripts/verify.mjs` (Node 18 or newer, no install, no key) | 22 lines that start with `ok`, then `all 22 checks passed`. |
 | Open [the refused overspend](https://testnet.nearblocks.io/txns/BEvVCHSzQBWcMU9Zq7t2giSd1kJACFJPSpmyLnvLhMi) | The parent asks for a 0.6 NEAR sub-job. The contract panics `over the cap`. Nothing is reserved and nothing is paid. The signer is the parent's function-call key. |
 | Open [the parent account](https://testnet.nearblocks.io/address/v2-parent-mwfhf2kc.testnet) and its keys | One key. It is a function-call key for `bid`, `post_subjob`, `hire_sub`, `cancel_subjob`, and `deliver` on the hire contract. There is no full-access key. |
 | Open [the sub-agent payment](https://testnet.nearblocks.io/txns/8waa1NgdgMZKHGr17s73hCwWmk5BrMQeP6TnNYSEGuzN) | The roster check passes. The contract transfers 0.2 NEAR to `crew.v2-parent-mwfhf2kc.testnet`. |
@@ -29,7 +29,7 @@ The parent key was also asked to transfer 0.01 NEAR. The protocol refused it bef
 | `ben-mwfh2ybi.testnet` | Beneficiary | Full-access key `ed25519:GnadnU5xUmafTYK3dqLN1S5qHNHsJtohthZL8uyk8kxv`. It received the owner's 0.05 NEAR spend. It can call `close`. |
 | `intents-mwfh31oc.testnet` | Mock NEAR Intents, unused by this payout | Full-access key `ed25519:4Lcyut4is8eN5rgQQv2fDckgQ5HxDgEKojkVNLiE8NMu`. |
 
-No secret is in the repo. Every secret from this run is in `pop/hire/.keys/testnet.json`, which git ignores. That file includes the full-access secrets for the owner, the sub-agent, the beneficiary, and the mock intents account, and the deleted full-access secrets of the contract and the parent.
+No secret is in the repo. Every secret from this run is in `hire/.keys/testnet.json`, which git ignores. That file includes the full-access secrets for the owner, the sub-agent, the beneficiary, and the mock intents account, and the deleted full-access secrets of the contract and the parent.
 
 ## Transactions
 
@@ -49,22 +49,22 @@ No secret is in the repo. Every secret from this run is in `pop/hire/.keys/testn
 | Parent delivers and the owner is paid 0.3 NEAR | [A6VKi1eH…](https://testnet.nearblocks.io/txns/A6VKi1eH7AYQUerWZZNikvTHEikwXXgNJD16nPLesiCd) |
 | Owner spends 0.05 NEAR | [HqcztZQ5…](https://testnet.nearblocks.io/txns/HqcztZQ5JCY2oZ6iobsTw5grsiu2Tvgg8PR3Rck6tFkJ) |
 
-`pop/hire/run.json` is the same record, read by the verifier.
+`hire/run.json` is the same record, read by the verifier.
 
 ## Checks
 
 ```sh
-node pop/hire/scripts/verify.mjs
-cd pop/hire/contract && cargo test
+node hire/scripts/verify.mjs
+cd hire/contract && cargo test
 ```
 
 `cargo test` is 11 tests: both payouts, the owner as payee, the cap, a second sub-job past what is left, a stranger who is not a sub-account, a parent that cannot name itself as owner, a failed delivery that pays nothing, and the global cap.
 
-To run the flow again on testnet, build the hire wasm and run the script. It refuses `mainnet`. A second run continues the v2 accounts in `pop/hire/.keys/`.
+To run the flow again on testnet, build the hire wasm and run the script. It refuses `mainnet`. A second run continues the v2 accounts in `hire/.keys/`.
 
 ```sh
-cd pop/hire/contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release
-node pop/hire/scripts/run.mjs
+cd hire/contract && RUSTFLAGS='--cfg near' cargo build --target wasm32-unknown-unknown --release
+node hire/scripts/run.mjs
 ```
 
 The first recorded contract, `contract-mwfh2uli.testnet`, paid the parent in wNEAR on the locked account. That deployment is unchanged and is not what the verifier reads.

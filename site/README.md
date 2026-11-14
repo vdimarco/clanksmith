@@ -1,5 +1,11 @@
-# Clanksmith landing page
+# Clanksmith site
 
-This directory is a copy of the page and assets served at `https://clanksmith.com/` on 13 November 2026, with audited copy and accessibility fixes. It has no build step. Preview it from this directory with `python3 -m http.server 8000`.
+This folder is the static site for `https://clanksmith.com/`. It has no build step for the landing page.
 
-The current production origin and deployment route are not tracked in this repository. Publishing this directory requires identifying that route first; copying these files alone does not update the live domain.
+- `index.html`, `motion.js` and `chain.js` are the landing page. `chain.js` reads the mainnet contract in the browser and shows its real counts.
+- `board/` is a copy of `../board/public/`. Do not edit it here. Change `board/public/`, then run `node scripts/build-site.mjs` from the repository root.
+- `_headers` holds the security headers and cache rules for Cloudflare.
+
+Preview it from this folder with `python3 -m http.server 8000`.
+
+To publish, upload this whole folder to the Cloudflare project that serves the domain. The deploy route is not in this repository.

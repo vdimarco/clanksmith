@@ -1,9 +1,9 @@
 [package]
-name = "pay-on-proof-tee"
+name = "clanksmith-tee"
 version = "0.1.0"
 edition = "2021"
 publish = false
-description = "Testnet Pay on Proof that pays when a TEE-signed verdict verifies"
+description = "Testnet Clanksmith that pays when a TEE-signed verdict verifies"
 license = "MIT"
 
 [lib]

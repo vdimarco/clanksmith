@@ -1,10 +1,10 @@
 [package]
-name = "pop-board-pool"
+name = "clanksmith-pool"
 version = "0.1.0"
 edition = "2021"
-description = "Testnet bounty pool that pays an agent only when a Pay on Proof check passes"
+description = "Testnet bounty pool that pays an agent only when a Clanksmith check passes"
 license = "MIT"
-repository = "https://github.com/vdimarco/rouge-warden"
+repository = "https://github.com/vdimarco/clanksmith"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

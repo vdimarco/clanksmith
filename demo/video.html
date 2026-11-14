@@ -1,10 +1,10 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Pay on Proof demo</title>
+<html><head><meta charset="utf-8"><title>Clanksmith demo</title>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>html,body{margin:0;background:#0b1712}canvas{display:block}</style></head>
 <body><canvas id="c" width="1920" height="1080"></canvas>
 <script>
-// Pay on Proof: a motion-graphics demo, drawn on one canvas. renderAt(t) draws the frame at t seconds, so frames
+// Clanksmith: a motion-graphics demo, drawn on one canvas. renderAt(t) draws the frame at t seconds, so frames
 // render one at a time and the video never drops a frame. Every number, hash and map comes from window.DATA,
 // which demo/collect.mjs reads from the mainnet contract.
 const W = 1920, H = 1080, cv = document.getElementById("c"), g = cv.getContext("2d");
@@ -70,9 +70,9 @@ function background(t) {
 
 // ---------------------------------------------------------------- scenes
 function sTitle(t) {
-  const words = "Pay on Proof".split("");
+  const words = "Clanksmith".split("");
   g.save(); g.font = `190px ${SERIF}`;
-  const total = g.measureText("Pay on Proof").width; let x = W / 2 - total / 2;
+  const total = g.measureText("Clanksmith").width; let x = W / 2 - total / 2;
   words.forEach((ch, i) => {
     const p = eo(seg(t, 0.3 + i * 0.05, 1.1 + i * 0.05));
     text(ch, x, 470 + (1 - p) * 60, { size: 190, color: C.brass2, alpha: p });
@@ -346,10 +346,10 @@ function sJoin(t) {
 function sEnd(t) {
   const D = window.DATA;
   const p = eo(seg(t, 0.1, 0.9));
-  text("Pay on Proof", W / 2, 400, { size: 170, align: "center", color: C.brass2, alpha: p });
+  text("Clanksmith", W / 2, 400, { size: 170, align: "center", color: C.brass2, alpha: p });
   text("Built at NEAR Hackathon · Agent Economy", W / 2, 530, { size: 48, align: "center", alpha: eo(seg(t, 0.6, 1.2)) });
   text(`contract ${short(D.contract, 8, 6)} on NEAR mainnet`, W / 2, 615, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1, 1.6)) });
-  text("github.com/vdimarco/rouge-warden", W / 2, 665, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1.2, 1.8)) });
+  text("github.com/vdimarco/clanksmith", W / 2, 665, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1.2, 1.8)) });
   const tag = eo(seg(t, 1.8, 2.4));
   g.save(); g.globalAlpha = tag; rrect(W / 2 - 380, 740, 760, 80, 40); g.fillStyle = C.brass; g.fill(); g.restore();
   text("@NEARProtocol  #NEARHackathon", W / 2, 793, { size: 36, font: MONO, align: "center", color: C.ink, weight: 600, alpha: tag });

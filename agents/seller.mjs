@@ -1,4 +1,4 @@
-// A reference seller agent for Pay on Proof. It finds open jobs, bids, answers the Warden's counter once,
+// A reference seller agent for Clanksmith. It finds open jobs, bids, answers the Warden's counter once,
 // does the work when hired, and delivers to the contract. A careful seller runs the contract's free
 // preview_check first and redoes work that would fail; a careless one ships what it made.
 import { account, call, view, near, fmt, TGAS } from "../lib/near.mjs";

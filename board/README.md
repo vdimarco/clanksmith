@@ -1,8 +1,8 @@
 # Board
 
-A public page of Pay on Proof jobs, payouts, refusals, disputes and rulings. The credit score and the group pool are testnet contracts. Nothing here signs a mainnet transaction.
+A public page of Clanksmith jobs, payouts, refusals, disputes and rulings. The credit score and the group pool are testnet contracts. Nothing here signs a mainnet transaction.
 
-Preview, unclaimed, expires about one hour after 2026-11-13 22:08 UTC: https://flying-lilac-3g9cfwy.tmp.now/
+The board is at https://clanksmith.com/board/. `site/board/` is the published copy; `node scripts/build-site.mjs` makes it from `public/`.
 
 The page files are `public/index.html` and the modules next to it. Any static host can serve that directory. `sources.json` points at the contracts.
 
@@ -23,8 +23,8 @@ The page reads:
 | Do this | See this |
 | --- | --- |
 | Open the board | Jobs, payouts, refusals, disputes and rulings from mainnet, hire and appeals. Leaderboards for NEAR earned and check pass rate. |
-| `node pop/board/scripts/verify.mjs` | Read-only checks, no key. It recomputes the credit rows from hire and appeals. |
-| `node pop/scripts/verify.mjs mainnet` | `all 14 checks passed`. |
+| `node board/scripts/verify.mjs` | Read-only checks, no key. It recomputes the credit rows from hire and appeals. |
+| `node scripts/verify.mjs mainnet` | `all 14 checks passed`. |
 | Open [the refused large stake](https://testnet.nearblocks.io/txns/4CMDgsCJ99k8ercyLNQtcFuHzGDTwfyDyKxPQDZmCUyp) | A new account stakes above 0.02 NEAR. The contract panics `score too low for this budget`. |
 | Open [the short deposit](https://testnet.nearblocks.io/txns/12N12ZHYcP6NLFEWtabRJFChjvhY8vfSHHcmypPh6qEV) | The same account attaches less than 0.05 NEAR for a 0.02 NEAR job. The contract panics `deposit too small for this score`. |
 | Open [the accepted stake](https://testnet.nearblocks.io/txns/HtXQUthYEnyQj2EKXxQT6nNYdBaB33FjP6Nt7pJeJbMF) | Score 0, budget 0.02 NEAR, deposit 0.05 NEAR. The stake is recorded. [Refund](https://testnet.nearblocks.io/txns/6ncFcBLWeGjoyqvURte6u47TLBpuv4CnMEjKA61W6QPV) returns it. |
@@ -34,7 +34,7 @@ The page reads:
 | Open [the paid roster](https://testnet.nearblocks.io/txns/8RCdvpEv78qyunxxhMUTZ7JrBcarenm9ZiKy4SXfpJXS) | The same agent delivers a roster inside the spec. The contract transfers 0.15 NEAR. |
 | Open [the DAO proposal that paid in](https://testnet.nearblocks.io/txns/44ty7GeA15456FLaAeK7rkDo9H1cmVg9Yg1c1Geo1w8U) | Council vote on `pbmwfikb3e.sputnikv2.testnet`. Status Approved. The DAO is a funder of 0.2 NEAR. |
 
-`pop/board/run.json` is the same record.
+`board/run.json` is the same record.
 
 ## Credit rule
 
@@ -64,20 +64,20 @@ The credit contract and the pool deleted their full-access keys.
 | `funder-c-mwfii780.testnet` | Yes. `ed25519:7tDysCrTFdQF5EN4TQe7Y5RWR7F9Cmy37Gkxh7yiYLYG`. |
 | `worker-mwfiiauj.testnet` | Yes. `ed25519:CZEqzxofNYgdxZakaerBDnSEf8vvkE5L83sDThztXUed`. It holds the 0.15 NEAR payout. |
 
-No secret is in the repo. The secrets for these accounts, including the deleted contract keys, are in `pop/board/.keys/testnet.json`, which git ignores. The DAO has no full-access key. Its council is funder A and funder B.
+No secret is in the repo. The secrets for these accounts, including the deleted contract keys, are in `board/.keys/testnet.json`, which git ignores. The DAO has no full-access key. Its council is funder A and funder B.
 
 ## Checks
 
 ```sh
-node pop/board/scripts/verify.mjs
-node --test pop/board/test/*.test.mjs
-cd pop/board/credit/contract && cargo test
-cd pop/board/pool/contract && cargo test
+node board/scripts/verify.mjs
+node --test board/test/*.test.mjs
+cd board/credit/contract && cargo test
+cd board/pool/contract && cargo test
 ```
 
-To run the flow again, build needs the wasm32 target and `npm ci` in `pop/`. The script refuses `mainnet`. A second run reuses the accounts in `.keys/` and will not deploy over a locked contract.
+To run the flow again, build needs the wasm32 target and `npm ci` in ``. The script refuses `mainnet`. A second run reuses the accounts in `.keys/` and will not deploy over a locked contract.
 
 ```sh
 cd pop && npm ci
-node pop/board/scripts/run.mjs
+node board/scripts/run.mjs
 ```

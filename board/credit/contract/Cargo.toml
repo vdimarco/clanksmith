@@ -1,10 +1,10 @@
 [package]
-name = "pop-board-credit"
+name = "clanksmith-credit"
 version = "0.1.0"
 edition = "2021"
-description = "Testnet credit score for Pay on Proof agents, read from locked hire and appeals contracts"
+description = "Testnet credit score for Clanksmith agents, read from locked hire and appeals contracts"
 license = "MIT"
-repository = "https://github.com/vdimarco/rouge-warden"
+repository = "https://github.com/vdimarco/clanksmith"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

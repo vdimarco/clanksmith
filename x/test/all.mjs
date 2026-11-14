@@ -10,15 +10,15 @@ import { near } from "../../lib/near.mjs";
 let fails = 0;
 const ok = (name, cond) => { console.log(`${cond ? "ok  " : "FAIL"} ${name}`); if (!cond) fails++; };
 
-const logo = parseMention("@payonproof make me a logo, 5 NEAR");
+const logo = parseMention("@clanksmith make me a logo, 5 NEAR");
 ok("logo mention is paint at contrast 450", logo.kind === "paint" && logo.spec.contrast_x100 === 450 && logo.title === "logo");
-ok("logo budget is 5 NEAR", logo.budgetNear === 5 && logo.handle === "payonproof");
+ok("logo budget is 5 NEAR", logo.budgetNear === 5 && logo.handle === "clanksmith");
 
-const map = parseMention("@payonproof a 3 room map, 0.2 NEAR");
+const map = parseMention("@clanksmith a 3 room map, 0.2 NEAR");
 ok("map mention asks for 3 rooms", map.kind === "map" && map.spec.rooms === 3 && map.spec.cols === 4 && map.budgetNear === 0.2);
 
 let threw = false;
-try { parseMention("@payonproof make me a logo"); } catch { threw = true; }
+try { parseMention("@clanksmith make me a logo"); } catch { threw = true; }
 ok("a mention without NEAR is refused", threw);
 
 const feed = createFeed("x.testnet");
@@ -41,11 +41,11 @@ try {
 ok("proto_von is refused", refused);
 
 let named = "";
-try { await postReply({ text: "no", dryRun: false, env: { X_BOT_USERNAME: "payonproof" } }); }
+try { await postReply({ text: "no", dryRun: false, env: { X_BOT_USERNAME: "clanksmith" } }); }
 catch (e) { named = e.message; }
-ok("missing live credentials are named", missingLiveEnv({ X_BOT_USERNAME: "payonproof" }).includes("X_API_KEY") && named.includes("X_API_KEY") && named.includes("X_ACCESS_TOKEN_SECRET"));
+ok("missing live credentials are named", missingLiveEnv({ X_BOT_USERNAME: "clanksmith" }).includes("X_API_KEY") && named.includes("X_API_KEY") && named.includes("X_ACCESS_TOKEN_SECRET"));
 
-const fakeEnv = { X_BOT_USERNAME: "payonproof", X_API_KEY: "ck", X_API_SECRET: "consumersecretvalue", X_ACCESS_TOKEN: "tk", X_ACCESS_TOKEN_SECRET: "tokensecretvalue" };
+const fakeEnv = { X_BOT_USERNAME: "clanksmith", X_API_KEY: "ck", X_API_SECRET: "consumersecretvalue", X_ACCESS_TOKEN: "tk", X_ACCESS_TOKEN_SECRET: "tokensecretvalue" };
 let seen = null;
 await postReply({
   text: "Job 0 is open",
@@ -59,7 +59,7 @@ await postReply({
 const sent = JSON.parse(seen.opts.body);
 ok("live post targets the tweets endpoint", seen.url === "https://api.x.com/2/tweets" && sent.text === "Job 0 is open" && sent.reply.in_reply_to_tweet_id === "99");
 ok("live post signs OAuth and does not send the secret", seen.opts.headers.authorization.startsWith("OAuth ") && !seen.opts.body.includes("tokensecretvalue") && !seen.opts.headers.authorization.includes("tokensecretvalue"));
-assertBot("payonproof");
+assertBot("clanksmith");
 
 const header = oauthHeader({ method: "POST", url: "https://api.x.com/2/tweets", consumerKey: "ck", consumerSecret: "cs", token: "tk", tokenSecret: "ts", nonce: "n1", timestamp: 1700000000 });
 ok("OAuth header is stable", header === oauthHeader({ method: "POST", url: "https://api.x.com/2/tweets", consumerKey: "ck", consumerSecret: "cs", token: "tk", tokenSecret: "ts", nonce: "n1", timestamp: 1700000000 }) && header.includes("oauth_signature"));
@@ -67,7 +67,7 @@ ok("OAuth header is stable", header === oauthHeader({ method: "POST", url: "http
 const line = replyText({ kind: "checked", jobId: 1, pass: false, reason: "room cut off", txUrl: "https://testnet.nearblocks.io/txns/" + tx });
 ok("a check reply names the reason and the transaction", line.includes("fail") && line.includes("room cut off") && line.includes(tx));
 
-const html = renderThread([{ who: "you", text: "@payonproof make me a logo, 0.2 NEAR" }, { who: "bot", text: line }]);
+const html = renderThread([{ who: "you", text: "@clanksmith make me a logo, 0.2 NEAR" }, { who: "bot", text: line }]);
 ok("the thread page contains the reply and says it is a dry run", html.includes("Dry run") && html.includes("room cut off") && html.includes("https://testnet.nearblocks.io/txns/" + tx));
 
 let mainnet = false;

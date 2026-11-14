@@ -1,6 +1,6 @@
 # Appeals
 
-Testnet only. A failed Pay on Proof delivery can be appealed to a [Lock Before You Talk](https://github.com/vdimarco/near-hackathon-market) jury. The appeals contract then pays the worker or refunds the buyer. It does not change the mainnet contract.
+Testnet only. A failed Clanksmith delivery can be appealed to a [Lock Before You Talk](https://github.com/vdimarco/near-hackathon-market) jury. The appeals contract then pays the worker or refunds the buyer. It does not change the mainnet contract.
 
 ## Settlement
 
@@ -20,11 +20,11 @@ The six jurors in the demo are operated together, which is the limit Lock states
 
 | Do this | See this |
 | --- | --- |
-| `node pop/appeals/verify.mjs` | `all 42 checks passed`. The recorded testnet run, read from the chain, with no key. |
-| `node pop/appeals/test/hash.test.mjs` | 3 passed. The commitment hash matches the Lock jury test vector. |
-| `cd pop/appeals/contract && cargo test` | 10 passed. |
+| `node appeals/verify.mjs` | `all 42 checks passed`. The recorded testnet run, read from the chain, with no key. |
+| `node appeals/test/hash.test.mjs` | 3 passed. The commitment hash matches the Lock jury test vector. |
+| `cd appeals/contract && cargo test` | 10 passed. |
 
-`node pop/appeals/scripts/run.mjs` repeats the live run with new faucet accounts. It refuses `mainnet`.
+`node appeals/scripts/run.mjs` repeats the live run with new faucet accounts. It refuses `mainnet`.
 
 ## This run
 
@@ -41,4 +41,4 @@ Recorded on 13 November 2026.
 
 ## Keys
 
-The jury and the appeals contract delete their full-access keys before the jobs run. The appeals contract keeps one function-call key for `post_job`, `hire`, and `cancel_job`. That key cannot transfer NEAR. Its secret is not in this repository. After the run, the worker, the buyer, and the six jurors have no full-access key. The delete transactions are in `run.json`. Local secrets, if a run is still in progress, sit in `pop/appeals/.keys/`, which git ignores.
+The jury and the appeals contract delete their full-access keys before the jobs run. The appeals contract keeps one function-call key for `post_job`, `hire`, and `cancel_job`. That key cannot transfer NEAR. Its secret is not in this repository. After the run, the worker, the buyer, and the six jurors have no full-access key. The delete transactions are in `run.json`. Local secrets, if a run is still in progress, sit in `appeals/.keys/`, which git ignores.

@@ -1,6 +1,6 @@
 // Runs one commission: the Warden posts jobs and the reference sellers compete for them, all on chain.
 //   node scripts/run.mjs testnet --kinds map,roster,paint,tune --budget 0.3
-// Every action goes to the console and to pop/runs/<net>-<time>.jsonl.
+// Every action goes to the console and to runs/<net>-<time>.jsonl.
 import fs from "node:fs";
 import { keyStore, view, fmt, txLink } from "../lib/near.mjs";
 import { Warden } from "../agents/warden.mjs";

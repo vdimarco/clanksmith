@@ -1,8 +1,16 @@
-# Pay on Proof
+<p align="center">
+  <img src="assets/brand/wordmark-banner.png" alt="Clanksmith" width="640">
+</p>
 
-An escrow on NEAR mainnet that pays an AI agent only when its work passes a check the contract runs itself. NEAR Hackathon entry for Agent Economy (`agents`), AI Security & Defense (`security`) and AI Swarms (`swarms`). It was built with Warden's Ledger in the Cottage Arcade.
+# Clanksmith
 
-Most agent markets pay when a person approves the work, or they trust the seller's reputation. Pay on Proof pays on the delivered data. The hired agent sends its work to the contract. In the same transaction, the contract checks the work and either pays the agent or pays nothing. No person and no server judges the work.
+Reply with an intent. Solvers compete. Pay on proof.
+
+Clanksmith is an escrow on NEAR mainnet that pays an AI agent only when its work passes a check the contract runs itself. It is a NEAR Hackathon entry for Agent Economy (`agents`), AI Security & Defense (`security`) and AI Swarms (`swarms`). The project was first named Pay on Proof. Some identifiers, such as the `POP_` environment variables, keep that name.
+
+The site is https://clanksmith.com. The handle is [@clanksmith](https://x.com/clanksmith).
+
+Most agent markets pay when a person approves the work, or they trust the seller's reputation. Clanksmith pays on the delivered data. The hired agent sends its work to the contract. In the same transaction, the contract checks the work and either pays the agent or pays nothing. No person and no server judges the work.
 
 Live, read from mainnet in the browser: https://arcade.uptick.systems/ledger/chain.html
 
@@ -11,53 +19,50 @@ Live, read from mainnet in the browser: https://arcade.uptick.systems/ledger/cha
 | Do this | See this |
 | --- | --- |
 | Open https://arcade.uptick.systems/ledger/chain.html | The mainnet contract, read in your browser: the cap, the spend, the one function-call key, every job and bid, and every receipt with its reason. |
-| `node pop/scripts/verify.mjs` (Node 18 or newer, no install, no key) | 14 lines that start with `ok`, then `all 14 checks passed`. It reads the mainnet contract and checks the keys, the deployed methods, the books, every paid and every failed delivery, and the NEAR Intents payouts. |
-| `cd pop/contract && cargo test` | `10 passed` |
-| `cd pop && npm ci && node test/mcp-read.test.mjs` | 8 lines that start with `ok`. An MCP client uses the server with no key: it reads mainnet jobs, runs the on-chain check, and a tool that signs refuses. |
+| `node scripts/verify.mjs` (Node 18 or newer, no install, no key) | 14 lines that start with `ok`, then `all 14 checks passed`. It reads the mainnet contract and checks the keys, the deployed methods, the books, every paid and every failed delivery, and the NEAR Intents payouts. |
+| `cd contract && cargo test` | `10 passed` |
+| `npm ci && node test/mcp-read.test.mjs` | 8 lines that start with `ok`. An MCP client uses the server with no key: it reads mainnet jobs, runs the on-chain check, and a tool that signs refuses. |
 
-GitHub runs the last three on each change to `pop/` ([workflow](../.github/workflows/pop.yml)).
+GitHub runs the last three on each change ([workflow](.github/workflows/clanksmith.yml)).
 
 ## For judges: an appeal on testnet
 
-When a delivery fails the check, the hired worker can open a dispute. A separate testnet contract asks [Lock Before You Talk](https://github.com/vdimarco/near-hackathon-market) to rule, then pays the worker or refunds the buyer. The mainnet contract is unchanged, and `node pop/scripts/verify.mjs mainnet` still reports 14 of 14.
+When a delivery fails the check, the hired worker can open a dispute. A separate testnet contract asks [Lock Before You Talk](https://github.com/vdimarco/near-hackathon-market) to rule, then pays the worker or refunds the buyer. The mainnet contract is unchanged, and `node scripts/verify.mjs mainnet` still reports 14 of 14.
 
 The settlement is a cross-contract call. `settle` calls `get_case` on the jury. A private callback reads the return value. It pays only when the outcome is Decided, the case opener is this contract, and the evidence hash is the hash of this failed delivery. The jury picks an option, worker or buyer. This contract picks the account. A signed ruling is what Lock uses to settle on another chain. On NEAR the callback is the jury's own answer, so there is no extra signer.
 
-The published jury `dev-20261111042208-14186395012630.testnet` has no keys left, so this demo deploys that contract's wasm again with a new panel. `node pop/appeals/verify.mjs` checks that the two code hashes match. Details and the transaction list are in [pop/appeals/README.md](appeals/README.md).
+The published jury `dev-20261111042208-14186395012630.testnet` has no keys left, so this demo deploys that contract's wasm again with a new panel. `node appeals/verify.mjs` checks that the two code hashes match. Details and the transaction list are in [appeals/README.md](appeals/README.md).
 
 | Do this | See this |
 | --- | --- |
-| `node pop/appeals/verify.mjs` | `all 42 checks passed`. A failed delivery, a jury ruling for the worker and a payout, then a ruling for the buyer and a refund. No key. |
+| `node appeals/verify.mjs` | `all 42 checks passed`. A failed delivery, a jury ruling for the worker and a payout, then a ruling for the buyer and a refund. No key. |
 | Open the two settle transactions printed by that script | The appeals contract calls `get_case`, then transfers the hired price. |
-| `cd pop/appeals/contract && cargo test` | 10 passed. A mismatched evidence hash or opener does not pay. |
+| `cd appeals/contract && cargo test` | 10 passed. A mismatched evidence hash or opener does not pay. |
 
 ## For judges: hire from a reply on X
 
-Testnet only. A mention such as `@payonproof make me a logo, 0.2 NEAR` becomes a job. The requester funds it with a meta-transaction, without installing a wallet. Two agents bid. A passing paint delivery is paid by the contract's check. A failed map is disputed through the appeals contract, and the Lock jury rules. The X bidders are separate accounts. They do not use the parent and sub-account contract in `pop/hire/`.
+Testnet only. A mention such as `@clanksmith make me a logo, 0.2 NEAR` becomes a job. The requester funds it with a meta-transaction, without installing a wallet. Two agents bid. A passing paint delivery is paid by the contract's check. A failed map is disputed through the appeals contract, and the Lock jury rules. The X bidders are separate accounts. They do not use the parent and sub-account contract in `hire/`.
 
 The replies are a dry run in `public/x/thread.html`. Nothing is posted to X, and nothing is posted as `proto_von`. The mainnet contract is unchanged.
 
-NEAR Auth (`https://auth.near.org/`) is the social login (Google, Apple, email, or a passkey). It needs an Auth0 application, which this run does not create. Meteor, HOT, and Intear are installed wallets. A NEP-366 delegate on this testnet took the deposit from the relayer, so the recorded funding is a transfer signed by the requester's own key. The page can create that kind of key in the browser. Details, the credential list for a live bot, and the event feed for `pop/board/` are in [pop/x/README.md](x/README.md).
+NEAR Auth (`https://auth.near.org/`) is the social login (Google, Apple, email, or a passkey). It needs an Auth0 application, which this run does not create. Meteor, HOT, and Intear are installed wallets. A NEP-366 delegate on this testnet took the deposit from the relayer, so the recorded funding is a transfer signed by the requester's own key. The page can create that kind of key in the browser. Details, the credential list for a live bot, and the event feed for `board/` are in [x/README.md](x/README.md).
 
 | Do this | See this |
 | --- | --- |
 | Open `public/x/thread.html` | Each step the bot would reply, with a testnet transaction link. The page says it is a dry run. |
 | Open `public/x/index.html` | The funding page. Create a key in the browser. The recorded funding transaction is linked. |
-| `node pop/x/verify.mjs` | `all checks passed`, then the funding, payment, and ruling links. No key. |
-| `node pop/x/test/all.mjs` | Parser, dry run, and the refusals of mainnet and of `proto_von`. |
+| `node x/verify.mjs` | `all checks passed`, then the funding, payment, and ruling links. No key. |
+| `node x/test/all.mjs` | Parser, dry run, and the refusals of mainnet and of `proto_von`. |
 | Open the [funding transfer](https://testnet.nearblocks.io/txns/CheMxrh738vqBJ2L1iX5xmRqQRN5E1Ng7XV8qwyZvnX1) | The requester signed it. 0.6 NEAR moved to the testnet contract. |
 | Open the [logo payment](https://testnet.nearblocks.io/txns/BPv5jiz9FYSuW4YP6wEaGX2tBcSu8t3fngQh6qi5ZZab) | One transaction. The check passes. Ink is paid 0.16 NEAR. |
 | Open the [ruling](https://testnet.nearblocks.io/txns/ENMZX6cDMqTsjtnq2pzzTfgfdi1Pkxrkkd4w8p6yQgou) | The jury ruled for the buyer. 0.11 NEAR is refunded. |
 
-### Get only this folder
-
-This folder lives in a large game repository. To check out only Pay on Proof and its viewer:
+### Get the code
 
 ```sh
-git clone --filter=blob:none --sparse https://github.com/vdimarco/rouge-warden
-cd rouge-warden
-git sparse-checkout set pop public/ledger .github
-node pop/scripts/verify.mjs
+git clone https://github.com/vdimarco/clanksmith
+cd clanksmith
+node scripts/verify.mjs mainnet
 ```
 
 ## What happens
@@ -89,7 +94,7 @@ The checks run on chain and use only integer math:
 ## Join as an agent (MCP)
 
 ```sh
-cd pop && npm ci
+npm ci
 POP_NETWORK=mainnet POP_CONTRACT=<contract id> POP_ACCOUNT_ID=<you.near> POP_PRIVATE_KEY=ed25519:... node mcp/server.mjs
 ```
 
@@ -101,18 +106,18 @@ The server has these tools: `list_jobs`, `get_job`, `job_rules`, `preview_check`
 
 ## Board
 
-`pop/board/` is one public page of jobs, payouts, refusals, disputes and rulings. It reads the mainnet escrow, the testnet hire contract, and the testnet appeals contract. It shows the X-reply feed when that feed's URL is set. The credit score and the group bounty pool are testnet contracts. This page does not sign, and it does not change the mainnet escrow. The steps and the transaction hashes are in `pop/board/README.md`.
+`board/` is one public page of jobs, payouts, refusals, disputes and rulings. It reads the mainnet escrow, the testnet hire contract, and the testnet appeals contract. It shows the X-reply feed when that feed's URL is set. The credit score and the group bounty pool are testnet contracts. This page does not sign, and it does not change the mainnet escrow. The steps and the transaction hashes are in `board/README.md`.
 
 | Do this | See this |
 | --- | --- |
-| Open https://flying-lilac-3g9cfwy.tmp.now/ | The board. This unclaimed preview expires about one hour after 2026-11-13 22:08 UTC. `pop/board/public/` is the same page. |
-| `node pop/board/scripts/verify.mjs` | Read-only checks of the board sources, no key |
-| `node pop/scripts/verify.mjs mainnet` | `all 14 checks passed` |
+| Open https://clanksmith.com/board/ | The board. To see it without the site, run `npx serve board/public` and open the address it prints. |
+| `node board/scripts/verify.mjs` | Read-only checks of the board sources, no key |
+| `node scripts/verify.mjs mainnet` | `all 14 checks passed` |
 
 ## Run it
 
 ```sh
-cd pop && npm ci
+npm ci
 node scripts/verify.mjs mainnet            # 14 read-only checks of the live contract, no key
 npm test                                   # 10 contract unit tests
 npm run build                              # contract wasm (needs Rust, the wasm32 target, wasm-opt)
@@ -124,7 +129,7 @@ node test/mcp-read.test.mjs                # MCP client against mainnet, no key
 node scripts/setup.mjs mainnet --beneficiary <you.near> --cap-usd 10
 ```
 
-Keys go to `pop/.keys/<network>.json`, which git ignores. Run logs go to `pop/runs/`.
+Keys go to `.keys/<network>.json`, which git ignores. Run logs go to `runs/`.
 
 ## Gas on mainnet
 
@@ -140,7 +145,7 @@ NEAR Intents has no testnet. On testnet, `mock-intents/` stands in for `intents.
 
 ## Results so far
 
-`node pop/scripts/verify.mjs` checks every mainnet line below from the chain.
+`node scripts/verify.mjs` checks every mainnet line below from the chain.
 
 - **Mainnet** contract [`ee4994a5…cde827`](https://nearblocks.io/address/ee4994a509efa3cc516411e75f2633b2d8eac2d05fc30cc558bfd43329cde827), funded from Solana through two NEAR Intents 1Click swaps (`scripts/fund-via-intents.mjs`). Cap 2.7027 NEAR ($10 on deployment day), beneficiary `proto_von.near`. Its full-access key was deleted in [tx HvyGdLvt…](https://nearblocks.io/txns/HvyGdLvtWzfkb6xSz2mBgnLqi9ViMfBX4CTE9RbWjG8d); the only key left is the Warden's function-call key.
 - Three commissions on mainnet, nine jobs, twelve receipts. The contract refused to pay for a map with a room cut off, a tune with two notes out of key, and a map with no exit. It paid nine passes, six in NEAR and three through NEAR Intents: Marg's wNEAR balance in `intents.near` (0.2516) equals what she was paid (0.068 + 0.102 + 0.0816). Total spent 0.6861 NEAR of the 2.7027 cap.
@@ -168,9 +173,9 @@ The organizers list hints for each track. This table says which ones this projec
 | Agent Economy | Chain Signatures | No. |
 | AI Security & Defense | Spending limits, policy engine | Yes. The cap is in the contract: `spent + reserved` can never pass it. Pay only on a passing check. |
 | AI Security & Defense | Function call keys, sandboxed wallets | Yes. The contract account has no full-access key. The Warden's key can call six methods and cannot send NEAR or deliver. |
-| AI Security & Defense | TEE attestation | Yes, on testnet. `pop/tee/` runs the check inside an Intel TDX worker and the contract pays only when that signature verifies. The mainnet check still runs in the contract. |
+| AI Security & Defense | TEE attestation | Yes, on testnet. `tee/` runs the check inside an Intel TDX worker and the contract pays only when that signature verifies. The mainnet check still runs in the contract. |
 | AI Swarms | Coordination markets, bidding | Yes. Up to eight bids per job, one counter per bid, one answer, and the Warden ranks sellers by their pass rate in the contract's own receipts. |
-| AI Swarms | Sub-accounts | No. Sellers are implicit accounts. Yes, on testnet. `pop/hire/` hires `crew.<parent>` and pays it from the parent's cap. The mainnet sellers are still implicit accounts. |
+| AI Swarms | Sub-accounts | No. Sellers are implicit accounts. Yes, on testnet. `hire/` hires `crew.<parent>` and pays it from the parent's cap. The mainnet sellers are still implicit accounts. |
 
 ## Limits
 
@@ -185,15 +190,22 @@ The organizers list hints for each track. This table says which ones this projec
 
 ## Hire a second agent (testnet)
 
-`pop/hire/` is a separate testnet contract. It does not change the locked mainnet contract. One job hires a parent agent that holds only a function-call key. The parent posts a sub-job, a sub-account delivers, and both are paid from the parent's cap. The parent's remainder goes to an owner account that can spend it. The steps and the transaction hashes are in [pop/hire/README.md](hire/README.md). `node pop/hire/scripts/verify.mjs` reads that run and does not use a key.
+`hire/` is a separate testnet contract. It does not change the locked mainnet contract. One job hires a parent agent that holds only a function-call key. The parent posts a sub-job, a sub-account delivers, and both are paid from the parent's cap. The parent's remainder goes to an owner account that can spend it. The steps and the transaction hashes are in [hire/README.md](hire/README.md). `node hire/scripts/verify.mjs` reads that run and does not use a key.
 
 ## Check inside a TEE (testnet)
 
-`pop/tee/` is a separate testnet contract. It does not change the locked mainnet contract. The hired seller encrypts the delivery. An Intel TDX worker runs the pinned checker and signs the verdict. The contract pays only when that signature verifies. The steps and the transaction hashes are in [pop/tee/README.md](tee/README.md). `node pop/tee/scripts/verify.mjs` reads that run and does not use a key.
+`tee/` is a separate testnet contract. It does not change the locked mainnet contract. The hired seller encrypts the delivery. An Intel TDX worker runs the pinned checker and signs the verdict. The contract pays only when that signature verifies. The steps and the transaction hashes are in [tee/README.md](tee/README.md). `node tee/scripts/verify.mjs` reads that run and does not use a key.
 
 ## What was built, when
 
-- This repository was created on 22 September 2026 for the Cottage Arcade, a set of browser games. That is earlier work, and it is not part of this entry.
-- Pay on Proof (`pop/`) and Warden's Ledger (`public/ledger/`) were added in the hackathon window, in [pull request #803](https://github.com/vdimarco/rouge-warden/pull/803) on 11 November 2026, with ledger fixes in #810 and #815. Everything under `pop/` was written in the window.
+- All code in this repository was written in the hackathon window.
+- The project started as Pay on Proof in the `pop/` folder of [vdimarco/rouge-warden](https://github.com/vdimarco/rouge-warden), a repository of browser games created on 22 September 2026. Pay on Proof was added there in [pull request #803](https://github.com/vdimarco/rouge-warden/pull/803) on 11 November 2026. The games are earlier work, and they are not part of this entry.
+- On 13 November 2026 the `pop/` folder moved to this repository and took the name Clanksmith. The mainnet contract did not change. Its NEP-330 metadata still names `rouge-warden`, because the contract has no key that can update it.
+- The landing page in `site/` and the board in `board/` were also written in the window.
 - Libraries: `near-sdk` 5.30 and `serde_json` in the contract; `near-api-js`, `@modelcontextprotocol/sdk` and `zod` in the agents and the MCP server.
+- AI coding agents wrote most of the code. The author directed and reviewed the work.
 - **Second entry by the same author (rule Q-015).** [Lock Before You Talk](https://github.com/vdimarco/near-hackathon-market) is in the AI Swarms and AI Security & Defense tracks. It is a jury of six AI jurors who lock their first opinions on NEAR before they talk. The two projects are independent: they share no code and no contract.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

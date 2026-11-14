@@ -1,4 +1,4 @@
-// Sets up Pay on Proof on a network, step by step. Each step is skipped when already done, so a run can resume.
+// Sets up Clanksmith on a network, step by step. Each step is skipped when already done, so a run can resume.
 //   node scripts/setup.mjs testnet            faucet accounts, mock intents, deploy, Warden key, lock
 //   node scripts/setup.mjs mainnet --beneficiary <account> --cap-usd 10
 // Mainnet stops after printing the contract's address until that address holds enough NEAR.
@@ -10,7 +10,7 @@ if (!NETS[net]) { console.error("usage: node scripts/setup.mjs testnet|mainnet [
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const flag = (k) => process.argv.includes(k);
 const ks = keyStore(net);
-const WASM = arg("--wasm", new URL("../contract/target/near/pay_on_proof.wasm", import.meta.url).pathname);
+const WASM = arg("--wasm", new URL("../contract/target/near/clanksmith.wasm", import.meta.url).pathname);
 const WARDEN_METHODS = ["post_job", "counter", "hire", "cancel_job", "retry_payout", "unwrap_near"];
 const step = (s) => console.log("\n== " + s);
 
@@ -73,8 +73,8 @@ async function main() {
   const full = keys.keys.some((k) => k.public_key === pop.publicKey && k.access_key.permission === "FullAccess");
   if (!full) { console.log("\nThe contract account has no full-access key any more: setup is finished and locked."); return; }
 
-  step("Deploy Pay on Proof");
-  await deployIfNeeded(popAcc, WASM, "pay-on-proof");
+  step("Deploy Clanksmith");
+  await deployIfNeeded(popAcc, WASM, "clanksmith");
   let cfg = null;
   try { cfg = await view(net, pop.accountId, "get_config"); } catch (e) { /* not initialised */ }
   if (!cfg) {
