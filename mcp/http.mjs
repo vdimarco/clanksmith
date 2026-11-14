@@ -4,6 +4,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { createClanksmithServer } from "./clanksmith.mjs";
 
 const MCP_PATHS = new Set(["/mcp", "/mcp/", "/"]);
+const MAX_MCP_BODY_BYTES = 128 * 1024;
 
 export function isMcpPath(pathname) {
   return MCP_PATHS.has(pathname);
@@ -28,6 +29,28 @@ export async function handleMcp(request, { dispatch }) {
   }
   if (!isMcpPath(url.pathname)) return new Response("Not found\n", { status: 404, headers: cors({ "content-type": "text/plain; charset=utf-8" }) });
 
+  if (request.method === "POST") {
+    const chunks = [];
+    let size = 0;
+    const reader = request.body?.getReader();
+    if (reader) {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > MAX_MCP_BODY_BYTES) {
+          await reader.cancel();
+          return new Response("MCP request too large\n", { status: 413, headers: cors({ "content-type": "text/plain; charset=utf-8" }) });
+        }
+        chunks.push(value);
+      }
+    }
+    const body = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
+    request = new Request(request.url, { method: request.method, headers: request.headers, body, signal: request.signal });
+  }
+
   const payoutAddress = request.headers.get("x-payout-address") || "";
   const server = createClanksmithServer({
     dispatch,
@@ -44,7 +67,16 @@ export async function handleMcp(request, { dispatch }) {
 
 export async function nodeToRequest(req) {
   const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > MAX_MCP_BODY_BYTES) {
+      const error = new Error("MCP request too large");
+      error.status = 413;
+      throw error;
+    }
+    chunks.push(chunk);
+  }
   const body = Buffer.concat(chunks);
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {

@@ -23,8 +23,8 @@ export async function startLocal({ port = 0, state, env = {}, fetchImpl, now } =
       const response = await handleMcp(request, { dispatch });
       await writeNodeResponse(res, response);
     } catch (err) {
-      res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
-      res.end("MCP request failed\n");
+      res.writeHead(err.status === 413 ? 413 : 500, { "content-type": "text/plain; charset=utf-8" });
+      res.end(err.status === 413 ? "MCP request too large\n" : "MCP request failed\n");
       console.error(JSON.stringify({ event: "mcp_error", message: String(err?.message || err).slice(0, 200) }));
     }
   });

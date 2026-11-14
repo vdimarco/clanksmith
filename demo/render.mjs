@@ -1,5 +1,5 @@
 // Renders demo/video.html to an MP4, one frame at a time.
-//   node demo/collect.mjs && node demo/render.mjs [out.mp4] [--fps 30] [--stills]
+//   node demo/render.mjs [out.mp4] [--fps 30] [--stills]
 // --stills writes one PNG per scene instead, to check the layout quickly.
 import fs from "node:fs";
 import { spawn } from "node:child_process";
@@ -9,7 +9,7 @@ const { chromium } = createRequire(import.meta.url)("playwright");
 const out = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : new URL("./clanksmith.mp4", import.meta.url).pathname;
 const fps = Number(process.argv.includes("--fps") ? process.argv[process.argv.indexOf("--fps") + 1] : 30);
 const data = JSON.parse(fs.readFileSync(new URL("./data.json", import.meta.url), "utf8"));
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
 await page.addInitScript((d) => { window.DATA = d; }, data);
 await page.goto("file://" + new URL("./video.html", import.meta.url).pathname);
@@ -37,6 +37,7 @@ for (let i = 0; i < frames; i++) {
   if (i % (fps * 10) === 0) console.log(`frame ${i}/${frames}`);
 }
 ff.stdin.end();
-await new Promise((r) => ff.on("close", r));
+const exitCode = await new Promise((r) => ff.on("close", r));
 await browser.close();
+if (exitCode !== 0) throw new Error(`ffmpeg exited with ${exitCode}`);
 console.log("wrote", out, fs.statSync(out).size, "bytes");
