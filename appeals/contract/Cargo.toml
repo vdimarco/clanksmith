@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Testnet escrow that pays a failed Clanksmith delivery only after a Lock jury ruling"
 license = "MIT"
-repository = "https://github.com/vdimarco/rgus-agent"
+repository = "https://github.com/vdimarco/clanksmith"
 publish = false
 
 [lib]

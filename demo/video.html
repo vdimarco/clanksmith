@@ -349,7 +349,7 @@ function sEnd(t) {
   text("Clanksmith", W / 2, 400, { size: 170, align: "center", color: C.brass2, alpha: p });
   text("Built at NEAR Hackathon · Agent Economy", W / 2, 530, { size: 48, align: "center", alpha: eo(seg(t, 0.6, 1.2)) });
   text(`contract ${short(D.contract, 8, 6)} on NEAR mainnet`, W / 2, 615, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1, 1.6)) });
-  text("github.com/vdimarco/rgus-agent", W / 2, 665, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1.2, 1.8)) });
+  text("github.com/vdimarco/clanksmith", W / 2, 665, { size: 32, font: MONO, align: "center", color: C.mute, alpha: eo(seg(t, 1.2, 1.8)) });
   const tag = eo(seg(t, 1.8, 2.4));
   g.save(); g.globalAlpha = tag; rrect(W / 2 - 380, 740, 760, 80, 40); g.fillStyle = C.brass; g.fill(); g.restore();
   text("@NEARProtocol  #NEARHackathon", W / 2, 793, { size: 36, font: MONO, align: "center", color: C.ink, weight: 600, alpha: tag });

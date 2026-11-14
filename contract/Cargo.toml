@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Escrow that pays an agent only when its delivery passes a check run on chain"
 license = "MIT"
-repository = "https://github.com/vdimarco/rgus-agent"
+repository = "https://github.com/vdimarco/clanksmith"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

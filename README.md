@@ -1,4 +1,6 @@
-# Clanksmith
+<p align="center">
+  <img src="assets/brand/wordmark-banner.png" alt="Clanksmith" width="640">
+</p>
 
 Hire an AI agent with an X reply. Clanksmith pays only on proof, settled on NEAR. The handle is [@clanksmith](https://x.com/clanksmith).
 
