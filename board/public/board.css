@@ -21,7 +21,8 @@ h1 { font-size: 2rem; font-weight: 400; margin: 0; }
 @media (min-width: 720px) { .wordmark { height: 46px; } }
 h2 { font-size: 1.35rem; font-weight: 400; margin: 0 0 8px; }
 .sub, .status { margin: 6px auto 0; width: min(1120px, calc(100% - 24px)); color: #d9cbb0; font: 14px/1.45 var(--mono); }
-.wrap { width: min(1120px, 100%); margin: 0 auto; padding: 8px 12px 48px; }
+.wrap { width: min(1120px, 100%); margin: 0 auto; padding: 8px 12px 24px; }
+.site-foot { margin: 0 auto 32px; width: min(1120px, calc(100% - 24px)); color: #d9cbb0; font: 12px/1.4 var(--mono); }
 .card { background: var(--paper); color: var(--ink); border-radius: 12px; padding: 12px; margin: 12px 0; }
 .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
 .totals div { background: var(--chip); border-radius: 8px; padding: 8px; }

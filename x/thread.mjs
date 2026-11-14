@@ -44,15 +44,18 @@ export function renderThread(posts, { bot = "clanksmith" } = {}) {
   .bot { background: #1e1e1e; margin-right: 8%; }
   a { color: #FF6A1A; }
   img.swatch { display: block; width: 100%; max-width: 12rem; height: auto; margin-top: 8px; border-radius: 8px; }
+  .tagline { margin: 8px 0 0; color: #d9c89a; font-size: 0.95rem; }
+  .site-foot { max-width: 28rem; margin: 0 auto; padding: 0 16px 24px; color: #d9c89a; font-size: 0.8rem; }
 </style>
 </head>
 <body>
-<header class="brand"><img class="wordmark" src="brand/wordmark-light.png" alt="Clanksmith"></header>
+<header class="brand"><img class="wordmark" src="brand/wordmark-light.png" alt="Clanksmith"><p class="tagline">Reply with an intent. Solvers compete. Pay on proof.</p></header>
 <main>
 <h1>Thread replay</h1>
 <p class="note">Dry run. These are the replies the bot would post. Nothing was sent to X.</p>
 ${items}
 </main>
+<footer class="site-foot">User-owned AI.</footer>
 </body>
 </html>
 `;

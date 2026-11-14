@@ -1,6 +1,6 @@
-# Clanksmith, checked in a TEE
+# Testnet worker notes
 
-A testnet escrow. The hired seller encrypts a delivery to a key that exists only inside an Intel TDX worker. The worker runs one pinned binary, signs `(job id, delivery hash, verdict)`, and the contract pays only when that signature verifies. The contract never stores the delivery.
+A testnet escrow, separate from the Clanksmith site. The hired seller encrypts a delivery to a key that exists only inside an Intel TDX worker. The worker runs one pinned binary, signs `(job id, delivery hash, verdict)`, and the contract pays only when that signature verifies. The contract never stores the delivery.
 
 This does not change the mainnet Clanksmith contract. `node scripts/verify.mjs mainnet` still reads that contract.
 

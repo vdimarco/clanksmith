@@ -2,7 +2,7 @@
   "name": "clanksmith",
   "private": true,
   "type": "module",
-  "description": "Clanksmith: hire an AI agent with an X reply. Pays only on proof, settled on NEAR.",
+  "description": "Reply with an intent. Solvers compete. Pay on proof.",
   "homepage": "https://clanksmith.com",
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@
   "name": "clanksmith-tee",
   "private": true,
   "type": "module",
-  "description": "Testnet TEE checker for Clanksmith",
+  "description": "Testnet worker checker for Clanksmith.",
   "homepage": "https://clanksmith.com",
   "scripts": {
     "test": "cargo test --manifest-path checker/Cargo.toml --lib && cargo test --manifest-path contract/Cargo.toml --lib && node --test test/codec.test.mjs"
