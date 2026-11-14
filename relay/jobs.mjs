@@ -2,6 +2,7 @@
 // the site, or a clanksmith-proof fence. Other board rows are ignored.
 import { parseProof } from "./proof.mjs";
 import { publicError } from "./config.mjs";
+import { publicFinish, resolveFinish } from "./finish.mjs";
 
 const CLOSED = new Set(["settled", "refunded", "cancelled", "canceled", "closed", "completed"]);
 
@@ -23,18 +24,23 @@ export function normalizeJob(row) {
   const description = String(row.description || row.brief || "");
   const tags = Array.isArray(row.tags) ? row.tags.map((tag) => String(tag)) : [];
   const proof = parseProof(description);
+  const reward = moneyString(row.budgetAmount || row.budget_amount || row.poolAmount || row.pool_amount || 0);
+  const deadline = row.entriesCloseAt || row.entries_close_at || row.deadline || null;
+  const finish = resolveFinish({ row, proof, description, deadline, reward });
   return {
     jobId: String(jobId),
     title: String(row.title || "Untitled bounty").slice(0, 160),
-    reward: moneyString(row.budgetAmount || row.budget_amount || row.poolAmount || row.pool_amount || 0),
+    reward,
     currency: String(row.budgetToken || row.budget_token || row.poolToken || row.token || "USDC"),
-    deadline: row.entriesCloseAt || row.entries_close_at || row.deadline || null,
+    deadline,
     description,
     tags,
     kind: String(row.jobKind || row.job_kind || row.kind || "competition"),
     state: String(row.state || row.status || "open"),
     proof,
     proofSummary: proof?.summary || firstLine(description),
+    mode: finish.mode,
+    finish,
   };
 }
 
@@ -58,6 +64,7 @@ export function isOpen(job, now) {
 }
 
 export function publicJob(job, { full = false } = {}) {
+  const finish = publicFinish(job.finish || { mode: job.mode || "speed", metric: "score", target: job.proof?.minScore ?? 80 });
   const base = {
     jobId: job.jobId,
     title: job.title,
@@ -65,6 +72,8 @@ export function publicJob(job, { full = false } = {}) {
     currency: job.currency,
     deadline: job.deadline,
     proofSummary: job.proofSummary,
+    mode: finish.mode,
+    finish,
   };
   if (!full) return base;
   return {
@@ -80,10 +89,15 @@ export function publicJob(job, { full = false } = {}) {
 
 export function acceptanceText(job) {
   const min = job.proof?.minScore ?? 80;
+  const finish = publicFinish(job.finish || { mode: job.mode || "speed", metric: "score", target: min });
+  const rule = finish.mode === "quality"
+    ? `Quality mode: agents submit until ${finish.deadline || "the deadline"}. The best ${finish.metric} wins the budget of ${finish.budget} ${job.currency || ""}. ${finish.direction === "lower" ? "Lower" : "Higher"} is better. A tie goes to the earlier submission.`
+    : `Speed mode: the first submission with ${finish.metric} >= ${finish.target} wins and gets paid. The job closes immediately.`;
   return [
+    rule,
     "Clanksmith runs the proof check above before it sends anything to NEAR AI Agent Market.",
     `A score under ${min} is not forwarded.`,
-    "Only the highest passing submission is forwarded. The market allows one entry per builder, and Clanksmith is that builder.",
+    "The market allows one entry per builder, and Clanksmith is that builder.",
     "The market judge can still split the pool when another builder also scores 80 or higher.",
     "A person approves any Clanksmith payout. This server does not move funds.",
   ].join(" ");

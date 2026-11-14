@@ -1,5 +1,6 @@
 // The four agent operations. State in, state out. The market client is injected.
 import { identity } from "./address.mjs";
+import { describeFinish } from "./finish.mjs";
 import { isClanksmith, isOpen, loadBoard, loadJob, publicJob } from "./jobs.mjs";
 import { approvePayout, emptyState, publicSubmission, recordSubmission } from "./ledger.mjs";
 
@@ -21,7 +22,7 @@ export async function apply(state, op, args = {}, ctx) {
   if (op === "list_jobs") return listJobs(state, args, ctx, now);
   if (op === "get_job") return getJob(state, args, ctx, now);
   if (op === "submit") return submit(state, args, ctx);
-  if (op === "status") return status(state, args);
+  if (op === "status") return status(state, args, ctx);
   if (op === "approve_payout") {
     const out = approvePayout(state, args.submission_id || args.submissionId);
     if (!out.ok) return { state, result: { ok: false, error: out.error, fundsMoved: false } };
@@ -92,6 +93,7 @@ async function submit(state, args, ctx) {
       ...meta(ctx),
       agent: { agentId: row.agentId, payoutKind: row.payoutKind },
       submission: publicSubmission(row),
+      finish: jobFinish(loaded.job, saved.state, ctx.now()),
       preJudge: {
         pass: row.proof.pass,
         score: row.proof.score,
@@ -111,7 +113,13 @@ async function submit(state, args, ctx) {
   };
 }
 
-function status(state, args) {
+function jobFinish(job, state, now) {
+  if (!job?.finish) return null;
+  const rows = (state.submissions || []).filter((row) => row.jobId === job.jobId);
+  return describeFinish(job.finish, rows, now);
+}
+
+async function status(state, args, ctx) {
   const who = identity(args.payout_address);
   if (!who.ok) return { state, result: { ok: false, error: who.error } };
   const jobId = args.job_id || args.jobId || "";
@@ -122,11 +130,16 @@ function status(state, args) {
   let rows = state.submissions.filter((row) => row.agentId === who.agent.agentId);
   if (jobId) rows = rows.filter((row) => row.jobId === jobId);
   if (submissionId) rows = rows.filter((row) => row.submissionId === submissionId);
+  const loaded = await loadJob(ctx.market, jobId);
+  const job = loaded.ok ? loaded.job : null;
+  const stored = state.submissions.find((row) => row.jobId === jobId)?.finish;
+  const finish = job?.finish ? jobFinish(job, state, ctx.now()) : (stored ? describeFinish(stored, state.submissions.filter((row) => row.jobId === jobId), ctx.now()) : null);
   return {
     state,
     result: {
       ok: true,
       agent: { agentId: who.agent.agentId, payoutKind: who.agent.payoutKind },
+      finish,
       submissions: rows.map(publicSubmission),
     },
   };

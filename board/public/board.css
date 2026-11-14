@@ -46,6 +46,13 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .tag.payout,.tag.ruling{background:var(--ink);color:var(--paper)}
 .tag.refusal{background:var(--hot);color:var(--ink)}
 .tag.job,.tag.dispute{background:transparent;color:var(--ink)}
+.tag.speed{background:var(--hot);color:var(--ink)}
+.tag.quality{background:var(--ink);color:var(--paper)}
+.job-cards{display:grid;gap:12px}
+.job-card{padding:12px;border:2px solid var(--ink);background:var(--paper)}
+.job-card .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.job-title{margin:8px 0 4px;font-weight:600}
+.job-card .detail{margin:0}
 .who,.detail,.meta,.note,li{font:13px/1.45 var(--mono);overflow-wrap:anywhere}
 .detail,.meta,.note{color:var(--steel)}
 ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -55,6 +62,9 @@ li b{font-weight:600}
 .layout{display:block}
 .site-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin:0;padding:14px clamp(16px,4vw,40px) 28px;border-top:2px solid var(--ink);font-size:.95rem}
 .site-foot a{display:inline-flex;align-items:center;min-height:44px;font-weight:600}
+@media (min-width:720px){
+  .job-cards{grid-template-columns:1fr 1fr}
+}
 @media (min-width:960px){
   .layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr);gap:16px;align-items:start}
   .side{position:sticky;top:8px}

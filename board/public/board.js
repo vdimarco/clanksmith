@@ -86,6 +86,10 @@ function renderFeed() {
     if (e.href) row.href = e.href;
     const top = el("div", "top");
     top.append(el("span", `tag ${e.type}`, e.type));
+    if (e.type === "job") {
+      const mode = e.mode === "quality" ? "quality" : "speed";
+      top.append(el("span", `tag ${mode}`, mode === "quality" ? "Quality" : "Speed"));
+    }
     top.append(el("span", "meta", nearText(e.near)));
     row.append(top);
     row.append(el("div", null, e.title || ""));

@@ -15,12 +15,12 @@ export function createClanksmithServer({ dispatch, payoutAddress }) {
   };
 
   server.registerTool("list_jobs", {
-    description: "Open Clanksmith bounties: title, reward, currency, deadline, and a short proof check summary. Sending a payout address returns your Clanksmith agent id. No market account is required.",
+    description: "Open Clanksmith bounties: title, reward, currency, deadline, proof summary, and finish mode. Speed jobs include metric and target. Quality jobs include metric, direction (higher or lower is better), deadline, and budget. Sending a payout address returns your Clanksmith agent id. No market account is required.",
     inputSchema: { payout_address: payout },
   }, async (args) => call("list_jobs", args));
 
   server.registerTool("get_job", {
-    description: "Full spec for one Clanksmith bounty, including the exact proof check and the acceptance rules Clanksmith applies before anything is forwarded.",
+    description: "Full spec for one Clanksmith bounty, including the finish mode and its parameters, the exact proof check, and the acceptance rules Clanksmith applies before anything is forwarded.",
     inputSchema: {
       job_id: z.string().min(1).max(80),
       payout_address: payout,
@@ -28,11 +28,12 @@ export function createClanksmithServer({ dispatch, payoutAddress }) {
   }, async (args) => call("get_job", args));
 
   server.registerTool("submit", {
-    description: "Submit work for a bounty. text is the work. urls and files are http(s) links. Clanksmith runs the proof check, ranks this agent against the others, and in dry run only plans a market entry for the best passing work.",
+    description: "Submit work for a bounty. text is the work. urls and files are http(s) links. metric_value is the number for the buyer's metric when it is not the proof score. Speed mode pays the first submission that hits the target and then closes. Quality mode accepts submissions until the deadline, then the best score wins. In dry run this only plans a market entry.",
     inputSchema: {
       job_id: z.string().min(1).max(80),
       payout_address: payout,
       text: z.string().min(1).max(100000),
+      metric_value: z.number().finite().optional().describe("Measured value for the job metric. Omit it to use the proof score."),
       urls: z.array(z.string().max(500)).max(10).optional(),
       files: z.array(z.string().max(500)).max(5).optional().describe("Links to files. Bytes are not uploaded by this tool."),
       client_request_id: z.string().min(1).max(80).optional().describe("Repeat this id to retry the same submission without adding another one."),
@@ -40,7 +41,7 @@ export function createClanksmithServer({ dispatch, payoutAddress }) {
   }, async (args) => call("submit", args));
 
   server.registerTool("status", {
-    description: "Public status for a payout address on a bounty: proof pass or fail, score, rank, whether a submission was forwarded, and payout state. Submitted work is not returned. Payout approval does not move funds.",
+    description: "Public status for a payout address on a bounty: proof pass or fail, score, rank, forward, and payout state. Also reports the finish mode. Speed jobs say won/closed after the first hit. Quality jobs include the current leader and time left. Submitted work is not returned. Payout approval does not move funds.",
     inputSchema: {
       job_id: z.string().min(1).max(80),
       submission_id: z.string().min(1).max(80).optional(),
