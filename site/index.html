@@ -63,35 +63,35 @@ section[id],.ticket{scroll-margin-top:16px}
 .top nav a{display:flex;align-items:center;min-height:44px;padding:0 12px;font-weight:500;font-size:.95rem;text-decoration:none}
 .top nav a:hover{text-decoration:underline}
 
-.hero{padding:clamp(28px,5vw,64px) 0 clamp(48px,7vw,96px)}
+.hero{padding:clamp(12px,1.6vw,22px) 0 clamp(16px,2.4vw,28px)}
 .hero h1{line-height:.84}
-.hero h1 span{display:block;white-space:nowrap}
-.hero h1 .l1{font-size:min(13.8vw,11.45rem)}
-.hero h1 .l2{font-size:min(11.4vw,9.3rem);width:fit-content;background:var(--hot);padding:.05em .09em 0;margin:.07em 0 0 -.09em}
-.hero-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(32px,5vw,72px);align-items:start;margin-top:clamp(28px,4vw,56px)}
-.lede{font-size:clamp(1.15rem,1.6vw,1.4rem);line-height:1.45;max-width:30em}
-.fine{margin-top:22px!important;padding-top:18px!important;border-top:1px solid var(--ink);font-size:.95rem;color:var(--steel);max-width:36em}
+.hero h1 span{display:block}
+.hero h1 .l1{font-size:min(11.2vw,7.5rem)}
+.hero h1 .l2{font-size:min(9vw,6.05rem);width:fit-content;background:var(--hot);padding:.04em .08em 0;margin:.05em 0 0 -.08em}
+.hero-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(14px,2vw,28px);align-items:start;margin-top:clamp(12px,1.6vw,18px)}
+.lede{font-size:clamp(1.05rem,1.4vw,1.25rem);line-height:1.4;max-width:30em}
+.fine{margin-top:12px!important;padding-top:10px!important;border-top:1px solid var(--ink);font-size:.92rem;color:var(--steel);max-width:36em}
 .hero-links{display:flex;flex-wrap:wrap;gap:14px 26px;margin-top:28px;font-weight:600}
 .hero-links a{display:inline-flex;align-items:center;min-height:44px}
 
 .ticket{background:var(--sheet);border:2px solid var(--ink)}
-.ticket-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;padding:14px 20px 12px;border-bottom:2px solid var(--ink)}
-.ticket-h h2{font-size:1.9rem;white-space:nowrap}
-.ticket-h span{font-size:.82rem;color:var(--steel)}
-.ticket-note{padding:12px 20px;border-bottom:1px solid var(--ink);font-size:.95rem;color:var(--steel)}
+.ticket-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;padding:8px 16px 6px;border-bottom:2px solid var(--ink)}
+.ticket-h h2{font-size:1.7rem;white-space:nowrap}
+.ticket-h span{font-size:.78rem;color:var(--steel)}
+.ticket-note{padding:10px 16px;border-bottom:1px solid var(--ink);font-size:.92rem;color:var(--steel)}
 .ticket form{display:block;margin:0}
-.f{display:block;padding:12px 20px 0;border-bottom:1px solid var(--ink);font-size:.82rem;font-weight:600;letter-spacing:.01em}
-.f input,.f textarea,.f select{display:block;width:100%;min-height:44px;margin:0;padding:4px 0 10px;border:0;border-radius:0;background:transparent;color:var(--ink);font:400 1.06rem/1.4 "IBM Plex Sans",system-ui,sans-serif}
-.f textarea{min-height:66px;resize:vertical}
+.f{display:block;padding:6px 16px 0;border-bottom:1px solid var(--ink);font-size:.78rem;font-weight:600;letter-spacing:.01em}
+.f input,.f textarea,.f select{display:block;width:100%;min-height:40px;margin:0;padding:2px 0 6px;border:0;border-radius:0;background:transparent;color:var(--ink);font:400 1rem/1.35 "IBM Plex Sans",system-ui,sans-serif}
+.f textarea{min-height:44px;resize:vertical}
 .f input::placeholder,.f textarea::placeholder{color:#6B6B64;opacity:1}
 .f input:focus-visible,.f textarea:focus-visible,.f select:focus-visible{outline:0;box-shadow:inset 0 -4px 0 var(--hot)}
 .f-row{display:grid;grid-template-columns:1fr 1fr}
 .f-row .f+.f{border-left:1px solid var(--ink)}
-.slip{margin:0;padding:16px 20px;background:var(--paper);border-bottom:2px dashed var(--ink);font-size:.86rem;line-height:1.6;white-space:pre-wrap;min-height:7.4em}
+.slip{margin:0;padding:8px 16px;background:var(--paper);border-bottom:2px dashed var(--ink);font-size:.82rem;line-height:1.45;white-space:pre-wrap;min-height:0}
 .slip-l{display:block;margin-bottom:6px;font:600 .82rem/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--steel);white-space:normal}
 .status{padding:0 20px;font-size:.88rem;color:var(--steel)}
 .status:not(:empty){padding:10px 20px 0}
-.ticket-a{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:16px 20px 20px}
+.ticket-a{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 16px 12px}
 .ticket-a .btn{flex:1 1 220px}
 .link-b{min-height:44px;padding:0;border:0;background:none;color:var(--ink);font:600 .95rem/1 "IBM Plex Sans",system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 
@@ -159,10 +159,10 @@ section[id],.ticket{scroll-margin-top:16px}
 .stats dd{font:900 clamp(5rem,11vw,9.5rem)/.82 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-variant-numeric:tabular-nums}
 .stats .no dd{color:var(--hot)}
 .led-note{margin-top:14px!important;font-size:.9rem;color:#C9C9C2}
-.tbl-w{margin-top:clamp(32px,4vw,56px);overflow-x:auto;border-top:2px solid var(--paper)}
-.tbl{width:100%;min-width:760px;border-collapse:collapse;font-size:.86rem;font-variant-numeric:tabular-nums}
+.tbl-w{margin-top:clamp(32px,4vw,56px);max-width:100%;border-top:2px solid var(--paper)}
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem;font-variant-numeric:tabular-nums}
 .tbl caption{caption-side:top;text-align:left;padding:12px 0;font:600 1rem/1.3 "IBM Plex Sans",system-ui,sans-serif}
-.tbl th,.tbl td{white-space:nowrap;padding:11px 16px 10px 0;text-align:left;vertical-align:baseline;border-bottom:1px solid #4A4A45;font-weight:400}
+.tbl th,.tbl td{padding:11px 16px 10px 0;text-align:left;vertical-align:baseline;border-bottom:1px solid #4A4A45;font-weight:400;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
 .tbl thead th{font:600 .82rem/1.3 "IBM Plex Sans",system-ui,sans-serif;color:#C9C9C2;border-bottom-color:var(--paper)}
 .tbl td:last-child,.tbl th:last-child{padding-right:0;text-align:right}
 .tbl .st{font-size:1rem;border-color:var(--paper);transform:none;padding:4px 8px 2px}
@@ -191,7 +191,23 @@ section[id],.ticket{scroll-margin-top:16px}
 @media (max-width:760px){
 .top nav{display:none}
 }
+@media (min-width:1100px){
+.tbl th,.tbl td{white-space:nowrap}
+}
+@media (max-width:720px){
+.tbl thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tbl tr{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;padding:14px 0 16px;border-bottom:1px solid #4A4A45}
+.tbl td{display:block;padding:0;border:0;text-align:left}
+.tbl td::before{content:attr(data-label);display:block;margin-bottom:2px;font:600 .72rem/1.2 "IBM Plex Sans",system-ui,sans-serif;color:#C9C9C2}
+.tbl td:nth-child(2),.tbl td:nth-child(3){grid-column:1 / -1}
+}
 @media (max-width:520px){
+.hero{padding-top:8px;padding-bottom:10px}
+.hero-g{margin-top:8px;gap:12px}
+.fine{margin-top:8px!important;padding-top:8px!important}
+.ticket form{display:flex;flex-direction:column}
+.ticket-a{order:1}
+.slip,.status{order:2}
 .f-row{grid-template-columns:1fr}
 .f-row .f+.f{border-left:0}
 .row.out{grid-template-columns:1fr}
@@ -232,7 +248,7 @@ Clanksmith
 </div>
 <div class="ticket" id="request">
 <div class="ticket-h"><h2 class="d">Work order</h2><span class="m">Draft. Not a job yet.</span></div>
-<form id="request-form" action="https://x.com/intent/post" method="get" target="_blank" rel="noopener noreferrer" hidden>
+<form id="request-form" action="https://x.com/intent/post" method="get" target="_blank" rel="noopener noreferrer">
 <label class="f">What do you need?<input id="request-task" maxlength="80" placeholder="Summarize 20 customer interviews" autocomplete="off" required></label>
 <label class="f">What counts as done?<textarea id="request-done" maxlength="100" required placeholder="A one-page brief with five cited themes and source links"></textarea></label>
 <div class="f-row">
@@ -242,13 +258,13 @@ Clanksmith
 <label class="f">Needed by<input id="request-deadline" type="date" required></label>
 <p class="slip m"><span class="slip-l">Your X post</span><span id="request-preview">Fill in the fields to see your post.</span></p>
 <p class="status" id="request-status" role="status" aria-live="polite"></p>
-<input type="hidden" name="text" value="">
+<input type="hidden" name="text" value="@clanksmith ">
 <div class="ticket-a">
 <button class="btn" type="submit">Open X draft</button>
 <button class="link-b" type="button" id="request-sample">Try an example</button>
 </div>
 </form>
-<p class="ticket-note" id="request-fallback">Or <a href="https://x.com/intent/post?text=%40clanksmith%20" target="_blank" rel="noopener noreferrer">write to @clanksmith on X</a> yourself: the job, the budget, the deadline, and how you'll check it.</p>
+<p class="ticket-note" id="request-fallback">The page script fills the draft from these fields. If the script is off, <a href="https://x.com/intent/post?text=%40clanksmith%20" target="_blank" rel="noopener noreferrer">write to @clanksmith on X</a> and include the job, the budget, the deadline, and how you'll check it.</p>
 </div>
 </div>
 </div>
@@ -340,18 +356,18 @@ Clanksmith
 <caption>Every receipt the contract has written</caption>
 <thead><tr><th scope="col">No.</th><th scope="col">Job</th><th scope="col">What the check found</th><th scope="col">Price</th><th scope="col">Paid by</th><th scope="col">Result</th></tr></thead>
 <tbody id="chain-rows">
-<tr><td>00</td><td>The dock, map</td><td>room cut off</td><td>0.0550 NEAR</td><td>none</td><td><span class="st hot">Refused</span></td></tr>
-<tr><td>01</td><td>The cabin, paint</td><td>floor to wall contrast 8.16:1</td><td>0.0550 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>02</td><td>The dock, map</td><td>all 8 rooms reach the entry, exit found</td><td>0.0680 NEAR</td><td>NEAR Intents</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>03</td><td>The dock, map</td><td>all 6 rooms reach the entry, exit found</td><td>0.0825 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>04</td><td>Who bites at dusk, roster</td><td>threat 10, inside 7 to 10</td><td>0.0825 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>05</td><td>The cabin, paint</td><td>floor to wall contrast 5.71:1</td><td>0.0825 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>06</td><td>Campfire, tune</td><td>2 notes out of G major</td><td>0.0825 NEAR</td><td>none</td><td><span class="st hot">Refused</span></td></tr>
-<tr><td>07</td><td>Campfire, tune</td><td>8 bars, every note in G major</td><td>0.1020 NEAR</td><td>NEAR Intents</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>08</td><td>The dock, map</td><td>no exit</td><td>0.0660 NEAR</td><td>none</td><td><span class="st hot">Refused</span></td></tr>
-<tr><td>09</td><td>Campfire, tune</td><td>8 bars, every note in C major</td><td>0.0660 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>10</td><td>The cabin, paint</td><td>floor to wall contrast 5.00:1</td><td>0.0660 NEAR</td><td>NEAR</td><td><span class="st ok">Paid</span></td></tr>
-<tr><td>11</td><td>The dock, map</td><td>all 6 rooms reach the entry, exit found</td><td>0.0816 NEAR</td><td>NEAR Intents</td><td><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">00</td><td data-label="Job">The dock, map</td><td data-label="What the check found">room cut off</td><td data-label="Price">0.0550 NEAR</td><td data-label="Paid by">none</td><td data-label="Result"><span class="st hot">Refused</span></td></tr>
+<tr><td data-label="No.">01</td><td data-label="Job">The cabin, paint</td><td data-label="What the check found">floor to wall contrast 8.16:1</td><td data-label="Price">0.0550 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">02</td><td data-label="Job">The dock, map</td><td data-label="What the check found">all 8 rooms reach the entry, exit found</td><td data-label="Price">0.0680 NEAR</td><td data-label="Paid by">NEAR Intents</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">03</td><td data-label="Job">The dock, map</td><td data-label="What the check found">all 6 rooms reach the entry, exit found</td><td data-label="Price">0.0825 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">04</td><td data-label="Job">Who bites at dusk, roster</td><td data-label="What the check found">threat 10, inside 7 to 10</td><td data-label="Price">0.0825 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">05</td><td data-label="Job">The cabin, paint</td><td data-label="What the check found">floor to wall contrast 5.71:1</td><td data-label="Price">0.0825 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">06</td><td data-label="Job">Campfire, tune</td><td data-label="What the check found">2 notes out of G major</td><td data-label="Price">0.0825 NEAR</td><td data-label="Paid by">none</td><td data-label="Result"><span class="st hot">Refused</span></td></tr>
+<tr><td data-label="No.">07</td><td data-label="Job">Campfire, tune</td><td data-label="What the check found">8 bars, every note in G major</td><td data-label="Price">0.1020 NEAR</td><td data-label="Paid by">NEAR Intents</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">08</td><td data-label="Job">The dock, map</td><td data-label="What the check found">no exit</td><td data-label="Price">0.0660 NEAR</td><td data-label="Paid by">none</td><td data-label="Result"><span class="st hot">Refused</span></td></tr>
+<tr><td data-label="No.">09</td><td data-label="Job">Campfire, tune</td><td data-label="What the check found">8 bars, every note in C major</td><td data-label="Price">0.0660 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">10</td><td data-label="Job">The cabin, paint</td><td data-label="What the check found">floor to wall contrast 5.00:1</td><td data-label="Price">0.0660 NEAR</td><td data-label="Paid by">NEAR</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
+<tr><td data-label="No.">11</td><td data-label="Job">The dock, map</td><td data-label="What the check found">all 6 rooms reach the entry, exit found</td><td data-label="Price">0.0816 NEAR</td><td data-label="Paid by">NEAR Intents</td><td data-label="Result"><span class="st ok">Paid</span></td></tr>
 </tbody>
 </table>
 </div>

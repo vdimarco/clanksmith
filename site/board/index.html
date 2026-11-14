@@ -3,31 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Clanksmith</title>
-<meta name="description" content="Reply with an intent. Solvers compete. Pay on proof.">
-<meta name="theme-color" content="#141414">
-<link rel="icon" href="brand/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="brand/favicon-16.png">
-<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<title>Clanksmith board</title>
+<meta name="description" content="Jobs, payouts, refusals, disputes, and rulings. Post a job on X. Pay when it passes.">
+<meta name="theme-color" content="#EEEEEC">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="canonical" href="https://clanksmith.com/board/">
-<meta property="og:url" content="https://clanksmith.com">
-<meta property="og:title" content="Clanksmith">
-<meta property="og:description" content="Reply with an intent. Solvers compete. Pay on proof.">
-<meta property="og:image" content="brand/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Clanksmith">
+<meta property="og:url" content="https://clanksmith.com/board/">
+<meta property="og:title" content="Clanksmith board">
+<meta property="og:description" content="Jobs, payouts, refusals, disputes, and rulings. Post a job on X. Pay when it passes.">
+<meta property="og:image" content="https://clanksmith.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Clanksmith. Post a job on X. Pay when it passes.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="brand/og.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta name="twitter:title" content="Clanksmith board">
+<meta name="twitter:description" content="Jobs, payouts, refusals, disputes, and rulings. Post a job on X. Pay when it passes.">
+<meta name="twitter:image" content="https://clanksmith.com/og.jpg">
+<meta name="twitter:image:alt" content="Clanksmith. Post a job on X. Pay when it passes.">
 <link rel="stylesheet" href="board.css">
 </head>
 <body>
-<header class="top">
-  <div class="brand">
-    <h1><img class="wordmark" src="brand/wordmark-light.png" alt="Clanksmith"></h1>
-    <p class="sub">Reply with an intent. Solvers compete. Pay on proof.</p>
-  </div>
+<header class="site-top">
+  <a class="logo" href="/" aria-label="Clanksmith home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#101010"></rect><path d="M6 9h14l4 4v2H13v3h4v3h3v3H8v-3h3v-3h2v-3H6z" fill="#FF6A1A"></path></svg>
+    Clanksmith
+  </a>
+  <p class="tagline">Post a job on X. Pay when it passes.</p>
   <button type="button" class="reload" id="reload">Read again</button>
 </header>
 <p class="status" id="status" aria-live="polite">Reading the chain…</p>
@@ -48,7 +54,10 @@
     </div>
   </div>
 </main>
-<footer class="site-foot">User-owned AI.</footer>
+<footer class="site-foot">
+  <p>Built for the NEAR hackathon.</p>
+  <a href="/">Post a job</a>
+</footer>
 <script type="module" src="board.js"></script>
 </body>
 </html>
