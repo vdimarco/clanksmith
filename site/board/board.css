@@ -31,6 +31,7 @@ h2{margin:0 0 10px;font:900 2rem/.9 var(--display);letter-spacing:0;text-transfo
 .status{margin:0;padding:10px clamp(16px,4vw,40px) 0;color:var(--steel);font:400 .82rem/1.45 var(--mono)}
 .wrap{width:min(1180px,100%);margin:0 auto;padding:8px clamp(16px,4vw,40px) 28px}
 .card{background:var(--sheet);border:2px solid var(--ink);padding:14px 16px;margin:14px 0}
+#totals:empty{display:none}
 .totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
 .totals div{border-top:6px solid var(--ink);padding-top:8px}
 .totals b{display:block;font:900 2.4rem/.85 var(--display)}

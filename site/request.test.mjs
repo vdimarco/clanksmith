@@ -65,6 +65,8 @@ test("the board uses the live page copy and absolute share tags", () => {
   assert.match(html, /The first submission that hits the target wins/);
   assert.match(html, /A tie goes to the earlier submission/);
   assert.doesNotMatch(html, /—/);
+  const css = readFileSync(new URL("../board/public/board.css", import.meta.url), "utf8");
+  assert.match(css, /#totals:empty\{display:none\}/);
 });
 
 test("missing scope, invalid money, and oversized drafts cannot open X", () => {
