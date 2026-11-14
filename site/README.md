@@ -3,7 +3,7 @@
 This folder is the static site for `https://clanksmith.com/`. It has no build step for the landing page.
 
 - `index.html`, `request.mjs` and `chain.js` are the landing page. `chain.js` reads the mainnet contract in the browser and shows its real counts and receipts.
-- `fonts/` holds Big Shoulders Display, IBM Plex Sans and IBM Plex Mono. All three use the SIL Open Font License.
+- `fonts/` holds Big Shoulders Display 2.002, IBM Plex Sans 3.201 and IBM Plex Mono 2.3. All use SIL Open Font License 1.1; the published font notices are [Big Shoulders Display](fonts/OFL-Big-Shoulders-Display.txt) and [IBM Plex](fonts/OFL-IBM-Plex.txt).
 - `board/` is a copy of `../board/public/`. Do not edit it here. Change `board/public/`, then run `node scripts/build-site.mjs` from the repository root.
 - `.assetsignore` lists files that are not published.
 - The security headers, cache rules and redirects are in `../worker/site.mjs`.

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { Readable } from "node:stream";
 import { handleRequest } from "./site.mjs";
+import { handleMcp, nodeToRequest } from "../mcp/http.mjs";
 
 const env = {
   ASSETS: {
@@ -65,4 +67,31 @@ test("/mcp goes to the relay and www still redirects", async () => {
   });
   assert.equal(www.status, 301);
   assert.equal(www.headers.get("location"), "https://clanksmith.com/mcp?x=1");
+});
+
+test("MCP rejects oversized bodies before schema parsing or dispatch", async () => {
+  const body = "x".repeat(129 * 1024);
+  const response = await handleMcp(new Request("https://clanksmith.com/mcp", { method: "POST", body }), {
+    dispatch() { throw new Error("oversized request reached dispatch"); },
+  });
+  assert.equal(response.status, 413);
+  assert.match(await response.text(), /too large/);
+
+  const incoming = Object.assign(Readable.from([Buffer.from(body)]), {
+    headers: { host: "localhost" }, method: "POST", url: "/mcp",
+  });
+  await assert.rejects(nodeToRequest(incoming), { status: 413 });
+});
+
+test("MCP still handles a normal initialize request", async () => {
+  const request = new Request("https://clanksmith.com/mcp", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {
+      protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "audit", version: "1" },
+    } }),
+  });
+  const response = await handleMcp(request, { dispatch() { throw new Error("initialize should not dispatch"); } });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).result.serverInfo.name, "clanksmith");
 });

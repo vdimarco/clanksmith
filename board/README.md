@@ -75,9 +75,9 @@ cd board/credit/contract && cargo test
 cd board/pool/contract && cargo test
 ```
 
-To run the flow again, build needs the wasm32 target and `npm ci` in ``. The script refuses `mainnet`. A second run reuses the accounts in `.keys/` and will not deploy over a locked contract.
+To run the flow again, build needs the wasm32 target and `npm ci` at the repository root. The script refuses `mainnet`. A second run reuses the accounts in `.keys/` and will not deploy over a locked contract.
 
 ```sh
-cd pop && npm ci
+npm ci
 node board/scripts/run.mjs
 ```
