@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://clanksmith.com/sitemap.xml
