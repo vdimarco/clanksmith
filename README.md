@@ -36,8 +36,8 @@ Market writes stay off. The config sets `CLANKSMITH_LIVE_WRITES` to `false` and 
 
 GitHub Actions workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
 
-- On a pull request, and on a push to any branch other than `main`, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs worker/index.test.mjs`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest. It does not deploy, and it does not need the secrets below.
-- On a push to `main`, it runs those tests, then `wrangler deploy --config worker/wrangler.jsonc` for Worker `clanksmith`.
+- On every pull request and push, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs worker/index.test.mjs`, `node scripts/build-site.mjs --check`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest without deploying or using the secrets below.
+- On a push to `main`, it then runs `wrangler deploy --config worker/wrangler.jsonc` for Worker `clanksmith`.
 
 Wrangler is the dev dependency pinned in `package.json` (4.162.0). The workflow installs from the lockfile and calls that binary.
 
