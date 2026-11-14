@@ -2,7 +2,7 @@
 
 A public page of Clanksmith jobs, payouts, refusals, disputes and rulings. The credit score and the group pool are testnet contracts. Nothing here signs a mainnet transaction.
 
-Preview the board from `public/` with `npx serve public`. The v3 site on clanksmith.com does not publish this page.
+The board is at https://clanksmith.com/board/. `site/board/` is the published copy; `node scripts/build-site.mjs` makes it from `public/`.
 
 The page files are `public/index.html` and the modules next to it. Any static host can serve that directory. `sources.json` points at the contracts.
 

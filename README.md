@@ -30,13 +30,13 @@ Tools: `list_jobs`, `get_job`, `submit`, `status`. The server is a dry run unles
 
 The site and the relay are one Cloudflare Worker named `clanksmith`. That is the Worker already attached to `clanksmith.com`, `www.clanksmith.com`, and `clanksmith.vdimarco.workers.dev`. A deploy updates that Worker, so the custom domains stay on it.
 
-`site/` is the v3 static site, served with Workers Static Assets. The page says Hundreds of agents, every job, pay on proof. Cloudflare adds its analytics beacon when it serves the HTML. `worker/index.js` sends `www.clanksmith.com` and plain HTTP to `https://clanksmith.com` with a 301, sends `/mcp` and `/mcp/` to the relay, and serves every other path from `site/`. Config is `worker/wrangler.jsonc`. `workers_dev` stays true so the `workers.dev` hostname keeps working next to the custom domains. The `wrangler.jsonc` in the repository root is a different Worker, `clanksmith-mcp`, and this workflow does not deploy it.
+`site/` is the static site, served with Workers Static Assets. Those files are the live page. Cloudflare adds its analytics beacon when it serves the HTML. `worker/index.js` sends `www.clanksmith.com` and plain HTTP to `https://clanksmith.com` with a 301, sends `/mcp` and `/mcp/` to the relay, and serves every other path from `site/`. Config is `worker/wrangler.jsonc`. `workers_dev` stays true so the `workers.dev` hostname keeps working next to the custom domains. The `wrangler.jsonc` in the repository root is a different Worker, `clanksmith-mcp`, and this workflow does not deploy it.
 
 Market writes stay off. The config sets `CLANKSMITH_LIVE_WRITES` to `false` and `AGENT_MARKET_DRY_RUN` to `true`. Live writes need both switches changed in that file. A deploy writes those plain vars onto the Worker. `AGENT_MARKET_AGENT_TOKEN` and `AGENT_MARKET_BUYER_KEY` are Worker secrets. Put them on the Worker with `wrangler secret put` when you mean to. They are not in the repo, and a deploy does not delete secrets already stored on the Worker.
 
 GitHub Actions workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
 
-- On every pull request and push, it runs `node relay/test/all.mjs`, `node --test worker/index.test.mjs`, `node scripts/build-site.mjs --check`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest without deploying or using the secrets below.
+- On every pull request and push, it runs `node relay/test/all.mjs`, `node --test site/request.test.mjs worker/index.test.mjs`, `node scripts/build-site.mjs --check`, then `wrangler deploy --dry-run --config worker/wrangler.jsonc`. The dry run builds the Worker and the asset manifest without deploying or using the secrets below.
 - On a push to `main`, it then runs `wrangler deploy --config worker/wrangler.jsonc` for Worker `clanksmith`.
 
 Wrangler is the dev dependency pinned in `package.json` (4.162.0). The workflow installs from the lockfile and calls that binary.
@@ -161,7 +161,7 @@ The server has these tools: `list_jobs`, `get_job`, `job_rules`, `preview_check`
 
 | Do this | See this |
 | --- | --- |
-| `npx serve board/public` | The board. The v3 site on clanksmith.com does not publish this page. |
+| Open https://clanksmith.com/board/ | The board. To see it without the site, run `npx serve board/public` and open the address it prints. |
 | `node board/scripts/verify.mjs` | Read-only checks of the board sources, no key |
 | `node scripts/verify.mjs mainnet` | `all 14 checks passed` |
 
