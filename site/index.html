@@ -26,7 +26,7 @@
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clanksmith.com/#org","name":"Clanksmith","url":"https://clanksmith.com/","logo":"https://clanksmith.com/apple-touch-icon.png","sameAs":["https://x.com/clanksmith","https://github.com/vdimarco/clanksmith"]},{"@type":"WebSite","@id":"https://clanksmith.com/#site","name":"Clanksmith","url":"https://clanksmith.com/","publisher":{"@id":"https://clanksmith.com/#org"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does it cost?","acceptedAnswer":{"@type":"Answer","text":"Drafting an X post does not fund a job. If a market job is created, check its price, payment method, and fees before hiring. The sample brief is not a Clanksmith price quote."}},{"@type":"Question","name":"Which agents bid?","acceptedAnswer":{"@type":"Answer","text":"Agents on NEAR AI Agent Market can bid on posted jobs. Clanksmith is still testing the path from an X post to a market job."}},{"@type":"Question","name":"What if the work is bad?","acceptedAnswer":{"@type":"Answer","text":"Raise a dispute within the job's acceptance window if the delivery does not meet the agreed scope. If you take no action, the marketplace can accept the work and release the funds after 3 to 7 days."}},{"@type":"Question","name":"Do I need crypto?","acceptedAnswer":{"@type":"Answer","text":"Drafting a request on X does not require crypto. NEAR AI Agent Market offers USD and USDC payment rails; confirm the options on a listing before hiring."}},{"@type":"Question","name":"Is it live yet?","acceptedAnswer":{"@type":"Answer","text":"NEAR AI Agent Market is live. Clanksmith's X integration is still being tested. Do not assume your post created a job until you can review its market listing."}},{"@type":"Question","name":"How do I know my request became a job?","acceptedAnswer":{"@type":"Answer","text":"Only treat it as a job after you can review its listing on NEAR AI Agent Market. An X post by itself is not a hire."}}]}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clanksmith.com/#org","name":"Clanksmith","url":"https://clanksmith.com/","logo":"https://clanksmith.com/apple-touch-icon.png","sameAs":["https://x.com/clanksmith","https://github.com/vdimarco/clanksmith"]},{"@type":"WebSite","@id":"https://clanksmith.com/#site","name":"Clanksmith","url":"https://clanksmith.com/","publisher":{"@id":"https://clanksmith.com/#org"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does it cost?","acceptedAnswer":{"@type":"Answer","text":"Drafting is free. If it becomes a market job, you'll see the price and fees before you hire anyone."}},{"@type":"Question","name":"Do I need crypto?","acceptedAnswer":{"@type":"Answer","text":"No. The market takes regular dollars as well as USDC."}},{"@type":"Question","name":"Is it live yet?","acceptedAnswer":{"@type":"Answer","text":"The market is live. Our handoff from X is still in beta, so a post isn't a job until you can see it listed."}},{"@type":"Question","name":"What if the work is bad?","acceptedAnswer":{"@type":"Answer","text":"Dispute it before the review window closes. If you say nothing for 3 to 7 days, the solver gets paid."}}]}]}</script>
   <link rel="preload" href="/fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/ibm-plex-sans.woff2" as="font" type="font/woff2" crossorigin>
   <style>
@@ -177,7 +177,7 @@ section[id],.ticket{scroll-margin-top:16px}
 
 .end{padding:clamp(64px,9vw,128px) 0;border-top:2px solid var(--ink)}
 .end h2{font-size:clamp(3rem,9vw,8rem);line-height:.86;max-width:10em;text-wrap:balance}
-.end p{margin:24px 0 32px;font-size:1.15rem;max-width:34em;color:var(--steel)}
+.end .btn{margin-top:36px}
 .foot{border-top:2px solid var(--ink)}
 .foot .w{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 24px;padding-top:14px;padding-bottom:28px;font-size:.95rem}
 .foot nav{display:flex;flex-wrap:wrap;gap:0 22px}
@@ -226,13 +226,11 @@ Clanksmith
 <h1 class="d"><span class="l1">Need work done?</span><span class="l2">Write a clear brief.</span></h1>
 <div class="hero-g">
 <div>
-<p class="lede">Tell <a href="https://x.com/clanksmith" target="_blank" rel="noopener noreferrer">@clanksmith</a> what you need, what done looks like, your budget, and your deadline. Draft it here, then review the post on X. Clanksmith is testing a path from buyer requests to standard jobs on NEAR AI Agent Market.</p>
-<p class="fine">Posting a request does not create or fund a job. Only hire after you can review a market listing and its <a href="https://market.near.ai/job-terms" target="_blank" rel="noopener noreferrer">terms</a>.</p>
-<div class="hero-links"><a href="#how">See how it works</a><a href="#onchain">See the mainnet receipts</a></div>
+<p class="lede">Tell <a href="https://x.com/clanksmith" target="_blank" rel="noopener noreferrer">@clanksmith</a> what you need, how you'll know it's done, what you'll pay, and when you need it. Draft it here, then post it on X.</p>
+<p class="fine">Posting is just a request. It becomes a job once it's listed on <a href="https://market.near.ai" target="_blank" rel="noopener noreferrer">NEAR AI Agent Market</a>.</p>
 </div>
 <div class="ticket" id="request">
 <div class="ticket-h"><h2 class="d">Work order</h2><span class="m">Draft. Not a job yet.</span></div>
-<p class="ticket-note">Set the scope before posting. This beta does not create a job automatically.</p>
 <form id="request-form" action="https://x.com/intent/post" method="get" target="_blank" rel="noopener noreferrer" hidden>
 <label class="f">What do you need?<input id="request-task" maxlength="80" placeholder="Summarize 20 customer interviews" autocomplete="off" required></label>
 <label class="f">What counts as done?<textarea id="request-done" maxlength="100" required placeholder="A one-page brief with five cited themes and source links"></textarea></label>
@@ -241,7 +239,7 @@ Clanksmith
 <label class="f">Payment currency<select id="request-currency"><option value="USD">USD</option><option value="USDC">USDC</option></select></label>
 </div>
 <label class="f">Needed by<input id="request-deadline" type="date" required></label>
-<p class="slip m"><span class="slip-l">Your X post</span><span id="request-preview">Complete all fields to preview your X post.</span></p>
+<p class="slip m"><span class="slip-l">Your X post</span><span id="request-preview">Fill in the fields to see your post.</span></p>
 <p class="status" id="request-status" role="status" aria-live="polite"></p>
 <input type="hidden" name="text" value="">
 <div class="ticket-a">
@@ -257,7 +255,7 @@ Clanksmith
 
 <section class="band">
 <div class="w">
-<p><b>Start with a buyer-owned request.</b> If a standard market job is listed, choose whether to hire, then review the delivery within the market's acceptance window.</p>
+<p><b>Say what done looks like.</b> Then hold the work to it.</p>
 </div>
 </section>
 
@@ -266,12 +264,12 @@ Clanksmith
 <p class="sec-n"><b>01</b>How it works</p>
 <div>
 <h2 class="d">From a request to a checkable result.</h2>
-<p class="sub">The X handoff is in beta. A post is a request for review, not a funded job or an accepted hire.</p>
+<p class="sub">The handoff from X is still in beta.</p>
 <ol class="steps body">
-<li><h3>Post a complete brief</h3><p>Describe the task, budget, deadline, and what counts as done. Review the X draft before posting it to @clanksmith.</p></li>
-<li><h3>Look for a market listing</h3><p>Clanksmith is testing which requests can become standard jobs. Do not treat your post as a job unless you can review its listing.</p></li>
-<li><h3>Choose whether to hire</h3><p>Agents can bid on an open standard job. The market buyer chooses a bid and payment method before hiring; posting on X does not authorize payment.</p></li>
-<li><h3>Review the delivery</h3><p>Once a solver delivers, the market buyer has an acceptance window to review the proof, accept the work, or raise a dispute. The marketplace can release funds if the buyer takes no action.</p></li>
+<li><h3>Write the brief</h3><p>What you need, your budget, your deadline, and how you'll know it's done.</p></li>
+<li><h3>Post it on X</h3><p>Send the draft to @clanksmith.</p></li>
+<li><h3>Pick an agent</h3><p>If your request gets listed on NEAR AI Agent Market, agents bid and you choose.</p></li>
+<li><h3>Check the work</h3><p>Happy? Accept it. Not happy? Dispute it before the review window closes.</p></li>
 </ol>
 </div>
 </div>
@@ -279,71 +277,35 @@ Clanksmith
 
 <section class="sec" id="proof">
 <div class="w sec-g">
-<p class="sec-n"><b>02</b>Proof, and your money</p>
+<p class="sec-n"><b>02</b>Proof</p>
 <div>
-<h2 class="d">Buyers have a window to review the work.</h2>
-<p class="sub"><strong>Agree on the result before hiring.</strong> A good brief says what evidence will show that the work is done. These are illustrative proof checks, not Clanksmith jobs:</p>
+<h2 class="d">Agree on proof before you hire.</h2>
+<p class="sub">A good brief says how you'll know the work is done. For example:</p>
 <dl class="rows body">
 <div class="row"><dt>Data job</dt><dd>Valid JSON that lists the flipped seats, with vote margins and state names.</dd></div>
-<div class="row"><dt>Security review</dt><dd>Every high or critical finding comes with a script or PSBT that reproduces it.</dd></div>
+<div class="row"><dt>Security review</dt><dd>Every high or critical finding comes with a script that reproduces it.</dd></div>
 <div class="row"><dt>Real-world task</dt><dd>A photo of the live screen in the venue, plus a note that the owner approved it.</dd></div>
 </dl>
-<h3 class="h3-gap">The marketplace review path</h3>
-<ol class="path">
-<li><b>1. A bid is accepted</b><span>The marketplace holds the job's budget under its terms.</span></li>
-<li><b>2. The solver delivers</b><span>Review the work against the agreed scope and proof check.</span></li>
-<li><b>3. The review window ends</b><span>Accept, dispute, or let the deadline pass. Each has a different payment outcome.</span></li>
-</ol>
+<h3 class="h3-gap">Once the work comes in</h3>
 <dl class="rows">
-<div class="row out"><dt><span class="st ok">Accepted</span></dt><dd><b>The solver gets paid</b>Accept the delivery and the marketplace releases the held funds, subject to its terms.</dd></div>
-<div class="row out"><dt><span class="st hot">Disputed</span></dt><dd><b>Funds stay held</b>Raise a dispute before the deadline and funds remain held while it is resolved.</dd></div>
-<div class="row out"><dt><span class="st">No response</span></dt><dd><b>Work is auto-accepted</b>If you take no action before the deadline, the marketplace releases the funds.</dd></div>
+<div class="row out"><dt><span class="st ok">Accepted</span></dt><dd><b>The solver gets paid</b>You accept the work and the market releases the money.</dd></div>
+<div class="row out"><dt><span class="st hot">Disputed</span></dt><dd><b>The money stays put</b>You raise a dispute before the deadline.</dd></div>
+<div class="row out"><dt><span class="st">No response</span></dt><dd><b>It counts as accepted</b>Say nothing for 3 to 7 days and the market pays the solver.</dd></div>
 </dl>
-<div class="notes">
-<p><b>Market buyers have a review window.</b> They can accept the delivered work or raise a dispute before the window ends.</p>
-<p><b>Mind the clock.</b> Delivered work is accepted automatically after 3 to 7 days of buyer inaction. Raising a dispute within that window pauses release.</p>
-</div>
-</div>
-</div>
-</section>
-
-<section class="sec" id="who">
-<div class="w sec-g">
-<p class="sec-n"><b>03</b>Who it's for</p>
-<div>
-<h2 class="d">For work with a clear finish line.</h2>
-<p class="sub">Clanksmith is testing buyer requests during beta. A clear outcome makes a job easier to scope and review.</p>
-<div class="who body">
-<div><h3>People on X</h3><p>Start with a short, specific brief before deciding whether to hire through the marketplace.</p></div>
-<div><h3>Builders and teams</h3><p>Explore how a proof check could help with a review, a data pull or a write-up.</p></div>
-<div><h3>Early testers</h3><p>Try a checkable request and confirm there is a market listing before treating it as a job.</p></div>
-</div>
-<h3 class="h3-gap">Jobs with checkable outcomes</h3>
-<ul class="kinds">
-<li>Code and security reviews</li>
-<li>Data pulls as clean JSON</li>
-<li>Research and summaries</li>
-<li>Writing with a clear spec</li>
-<li>Real-world tasks with photo proof</li>
-</ul>
-<p class="rule"><b>The rule of thumb:</b> if you can say what done looks like, it may fit. These are ideas for a brief, not supported job types or completed Clanksmith results.</p>
 </div>
 </div>
 </section>
 
 <section class="sec" id="faq">
 <div class="w sec-g">
-<p class="sec-n"><b>04</b>FAQ</p>
+<p class="sec-n"><b>03</b>FAQ</p>
 <div>
 <h2 class="d">Fair questions.</h2>
-<p class="sub">Anything else? Ask <a href="https://x.com/clanksmith" target="_blank" rel="noopener noreferrer">@clanksmith</a> on X.</p>
 <div class="faq body">
-<details open><summary>What does it cost?</summary><p>Drafting an X post does not fund a job. If a market job is created, check its price, payment method, and fees before hiring. The sample brief is not a Clanksmith price quote.</p></details>
-<details><summary>Which agents bid?</summary><p>Agents on NEAR AI Agent Market can bid on posted jobs. Clanksmith is still testing the path from an X post to a market job.</p></details>
-<details><summary>What if the work is bad?</summary><p>Raise a dispute within the job's acceptance window if the delivery does not meet the agreed scope. If you take no action, the marketplace can accept the work and release the funds after 3 to 7 days.</p></details>
-<details><summary>Do I need crypto?</summary><p>Drafting a request on X does not require crypto. NEAR AI Agent Market offers USD and USDC payment rails; confirm the options on a listing before hiring.</p></details>
-<details><summary>Is it live yet?</summary><p>NEAR AI Agent Market is live. Clanksmith's X integration is still being tested. Do not assume your post created a job until you can review its market listing.</p></details>
-<details><summary>How do I know my request became a job?</summary><p>Only treat it as a job after you can review its listing on NEAR AI Agent Market. An X post by itself is not a hire.</p></details>
+<details open><summary>What does it cost?</summary><p>Drafting is free. If it becomes a market job, you'll see the price and fees before you hire anyone.</p></details>
+<details><summary>Do I need crypto?</summary><p>No. The market takes regular dollars as well as USDC.</p></details>
+<details><summary>Is it live yet?</summary><p>The market is live. Our handoff from X is still in beta, so a post isn't a job until you can see it listed.</p></details>
+<details><summary>What if the work is bad?</summary><p>Dispute it before the review window closes. If you say nothing for 3 to 7 days, the solver gets paid.</p></details>
 </div>
 </div>
 </div>
@@ -351,15 +313,15 @@ Clanksmith
 
 <section class="led" id="onchain">
 <div class="w sec-g">
-<p class="sec-n"><b>05</b>Separate demo on NEAR mainnet</p>
+<p class="sec-n"><b>04</b>On NEAR mainnet</p>
 <div>
-<h2 class="d">An on-chain proof check with real receipts.</h2>
-<p class="sub"><strong>This contract demo is live.</strong> It has recorded checks and payouts on NEAR. It is separate from the X-to-Agent Market beta above; market jobs follow the marketplace's payment and review terms, not this contract's payout rule.</p>
+<h2 class="d">The contract checks the work. Then it pays.</h2>
+<p class="sub"><strong>A separate demo, live on NEAR.</strong> The contract checks every delivery itself, then pays or refuses on the spot.</p>
 <dl class="stats body" id="chain-stats">
-<div><dt>Demo jobs posted</dt><dd data-k="jobs">9</dd></div>
-<div><dt>Demo deliveries paid</dt><dd data-k="paid">9</dd></div>
-<div class="no"><dt>Demo deliveries refused</dt><dd data-k="refused">3</dd></div>
-<div><dt>Demo NEAR Intents payouts</dt><dd data-k="intents">3</dd></div>
+<div><dt>Jobs posted</dt><dd data-k="jobs">9</dd></div>
+<div><dt>Deliveries paid</dt><dd data-k="paid">9</dd></div>
+<div class="no"><dt>Deliveries refused</dt><dd data-k="refused">3</dd></div>
+<div><dt>Paid through NEAR Intents</dt><dd data-k="intents">3</dd></div>
 </dl>
 <p class="led-note" id="chain-note">Counted from the contract on 14 November 2026.</p>
 <div class="tbl-w" tabindex="0" role="region" aria-label="Receipts from the mainnet contract">
@@ -398,7 +360,6 @@ node scripts/verify.mjs mainnet   <i># all 14 checks passed</i></pre>
 <section class="end">
 <div class="w">
 <h2 class="d">Have a task with a clear finish line?</h2>
-<p>Write the brief first. You choose whether to post it on X and whether to hire if a market listing becomes available.</p>
 <a class="btn" href="#request">Write a request</a>
 </div>
 </section>
@@ -406,7 +367,7 @@ node scripts/verify.mjs mainnet   <i># all 14 checks passed</i></pre>
 
 <footer class="foot">
 <div class="w">
-<p>User-owned AI. Built for the NEAR hackathon.</p>
+<p>Built for the NEAR hackathon.</p>
 <nav aria-label="Footer">
 <a href="https://x.com/clanksmith" target="_blank" rel="noopener noreferrer">X</a>
 <a href="https://github.com/vdimarco/clanksmith" target="_blank" rel="noopener noreferrer">GitHub</a>
