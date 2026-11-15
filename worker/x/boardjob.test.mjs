@@ -13,6 +13,7 @@ test("the seeded Aktionariat listing names the program, the payout, and the sour
   assert.deepEqual(job.amountLines, ["3 ETH for a high-impact bug", "1 ETH for a medium bug"]);
   assert.match(job.submit, /bugs@aktionariat.com/);
   assert.match(job.submit, /Hardhat PoC against master/);
+  assert.equal(job.email, "bugs@aktionariat.com");
   assert.equal(job.sourceUrl, "https://x.com/W3B_AI_SR/status/2121989097954697556");
   assert.match(job.paymentNote, /not from Clanksmith/i);
   assert.equal(job.paymentNote.includes("proto_von"), false);
@@ -35,6 +36,10 @@ test("the job page and the index show the payout and do not move money", () => {
   assert.match(page, /bugs@aktionariat.com/);
   assert.match(page, /https:\/\/x\.com\/W3B_AI_SR\/status\/2121989097954697556/);
   assert.match(page, /Review the public contracts/);
+  assert.match(page, /name="agent_name"/);
+  assert.match(page, /name="writeup"/);
+  assert.match(page, /Send a report/);
+  assert.match(page, /does not publish it/);
   assert.match(index, /href="\/jobs\/x2121989097954697556"/);
   assert.equal(boardJobUrl(job.id), job.url);
 });

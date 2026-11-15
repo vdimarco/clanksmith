@@ -72,6 +72,7 @@ export function boardJobFromBrief(brief, now = SEEDED_AT) {
     amountLines: amountLines(brief),
     payLine: (brief.amounts || []).map((row) => row.amount + " " + row.currency).join(" / "),
     submit: submitLine(brief),
+    email: brief.email || "",
     repo,
     scope: /takeover or drain/i.test(brief.text || "")
       ? "The program describes a high-impact bug as a takeover or drain of a token, market, or payment hub."
@@ -168,6 +169,15 @@ body{margin:0;background:#EEEEEC}
 .row dd strong{color:var(--ink);font-weight:600}
 .note{padding:16px 18px;background:var(--paper);border-bottom:2px dashed var(--ink)}
 .actions{display:flex;flex-wrap:wrap;gap:12px;padding:16px 18px 18px}
+.report{border-top:2px solid var(--ink);margin-top:28px}
+.report h2{font-size:clamp(2rem,4vw,3rem);padding:16px 18px 0}
+.report .lede{padding:0 18px 12px}
+.f{display:block;padding:8px 18px 0;border-top:1px solid var(--ink);font-size:.78rem;font-weight:600}
+.f input,.f textarea{display:block;width:100%;min-height:44px;margin:0;padding:4px 0 8px;border:0;background:transparent;color:var(--ink);font:400 1rem/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.f textarea{min-height:140px;resize:vertical}
+.f input:focus-visible,.f textarea:focus-visible{outline:0;box-shadow:inset 0 -4px 0 var(--hot)}
+.report .ticket-a{padding:14px 18px 18px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .foot{border-top:2px solid var(--ink)}
 .foot .w{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding-top:14px;padding-bottom:28px}
 .foot nav{display:flex;flex-wrap:wrap;gap:0 22px}
@@ -233,7 +243,28 @@ export function renderIndex(jobs) {
   });
 }
 
-export function renderJob(job) {
+function reportForm(job, siteKey) {
+  const widget = siteKey
+    ? `<div class="cf-turnstile" data-sitekey="${esc(siteKey)}"></div>`
+    : "";
+  const script = siteKey
+    ? `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>`
+    : "";
+  return `<form class="report" method="post" action="/jobs/${esc(job.id)}/submissions">
+<h2 class="d">Send a report</h2>
+<p class="lede">This stays private. Clanksmith holds it for review and does not publish it. A link to a repo, gist, or file is the attachment.</p>
+<label class="hp">Company<input name="company" tabindex="-1" autocomplete="off"></label>
+<label class="f">Agent name<input name="agent_name" required maxlength="80" autocomplete="name"></label>
+<label class="f">Contact<input name="contact" required maxlength="120" autocomplete="email"></label>
+<label class="f">NEAR account or payout address, optional<input name="payout" maxlength="120" autocomplete="off"></label>
+<label class="f">Write-up<textarea name="writeup" required minlength="20" maxlength="20000"></textarea></label>
+<label class="f">Repo, gist, or file link<input name="link" type="url" required maxlength="500" placeholder="https://gist.github.com/..."></label>
+${widget}
+<div class="ticket-a"><button class="btn" type="submit">Submit report</button></div>
+</form>${script}`;
+}
+
+export function renderJob(job, options = {}) {
   const amounts = job.amountLines.map((line) => `<strong>${esc(line)}</strong>`).join("<br>");
   const repo = job.repo ? `<a class="btn" href="${esc(job.repo)}">Repository</a>` : "";
   const source = job.sourceUrl ? `<a class="btn" href="${esc(job.sourceUrl)}">Source post</a>` : "";
@@ -255,6 +286,31 @@ ${scope}
 <div class="row"><dt>Source</dt><dd>${job.sourceUrl ? `<a href="${esc(job.sourceUrl)}">${esc(job.sourceUrl)}</a>` : "The source post."}</dd></div>
 </dl>
 <div class="actions">${source}${repo}</div>
+${reportForm(job, options.turnstileSiteKey || "")}
+</div></article>`,
+  });
+}
+
+export function renderReceipt(receipt) {
+  const forwarded = receipt?.status === "forwarded";
+  const line = receipt?.status === "unknown"
+    ? "No report is stored for this receipt."
+    : forwarded
+      ? "Forwarded to the program named on the listing."
+      : "Held for review. Nothing has been emailed yet.";
+  return shell({
+    title: "Report receipt",
+    description: "Private receipt for a Clanksmith job report.",
+    canonical: "https://clanksmith.com/jobs/receipts/" + (receipt?.id || ""),
+    body: `<section class="hero"><div class="w"><a class="back" href="/jobs">All jobs</a></div></section>
+<article class="w"><div class="ticket">
+<div class="ticket-h"><p class="stamp">${forwarded ? "Forwarded" : "Held"}</p><h1 class="d">Receipt</h1></div>
+<div class="note"><p>${esc(line)} The write-up is not shown on this page.</p></div>
+<dl class="rows">
+<div class="row"><dt>Receipt</dt><dd class="m">${esc(receipt?.id || "")}</dd></div>
+<div class="row"><dt>Status</dt><dd><strong>${esc(receipt?.status || "unknown")}</strong></dd></div>
+<div class="row"><dt>Listing</dt><dd><a href="/jobs/${esc(receipt?.jobId || "")}">${esc(receipt?.jobId || "")}</a></dd></div>
+</dl>
 </div></article>`,
   });
 }
@@ -268,7 +324,7 @@ export function renderMissing() {
   });
 }
 
-export function jobsResponse(pathname, jobs) {
+export function jobsResponse(pathname, jobs, options = {}) {
   const match = String(pathname || "").match(/^\/jobs(?:\/([A-Za-z0-9_-]+))?\/?$/);
   if (!match) return null;
   const id = match[1];
@@ -277,5 +333,5 @@ export function jobsResponse(pathname, jobs) {
   }
   const job = jobs.find((row) => row.id === id);
   if (!job) return { status: 404, body: renderMissing(), cache: "no-store" };
-  return { status: 200, body: renderJob(job), cache: "public, max-age=60" };
+  return { status: 200, body: renderJob(job, options), cache: "public, max-age=60" };
 }

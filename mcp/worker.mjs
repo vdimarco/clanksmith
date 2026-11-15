@@ -7,6 +7,35 @@ import { doName } from "../relay/jobs.mjs";
 import { apply, emptyState } from "../relay/service.mjs";
 import { handleMcp } from "./http.mjs";
 
+async function listingDispatch(env, op, args) {
+  if (!env.X_INBOX) return { ok: false, error: "inbox is not configured" };
+  const { durableInbox } = await import("../worker/x/object.mjs");
+  const { collectJobs } = await import("../worker/x/boardjob.mjs");
+  const { acceptSubmission, publicReceipt } = await import("../worker/x/submit.mjs");
+  const inbox = durableInbox(env.X_INBOX);
+  if (op === "listing_status") {
+    const record = await inbox.getSubmission(String(args.receipt_id || ""));
+    return record ? { ok: true, ...publicReceipt(record) } : { ok: false, error: "not found" };
+  }
+  const jobs = await collectJobs(inbox);
+  const job = jobs.find((row) => row.id === String(args.job_id || ""));
+  const result = await acceptSubmission({
+    job,
+    input: args,
+    inbox,
+    env,
+    rateKey: "mcp:" + String(args.agent_name || "anon").slice(0, 40),
+  });
+  console.log(JSON.stringify({
+    event: "job.submit",
+    jobId: String(args.job_id || ""),
+    receiptId: result.receipt?.id || "",
+    status: result.receipt?.status || result.error || "error",
+  }));
+  if (!result.ok) return { ok: false, error: result.error };
+  return { ok: true, ...result.receipt, replayed: result.replayed === true };
+}
+
 function envRecord(env) {
   return {
     AGENT_MARKET_BASE: env.AGENT_MARKET_BASE,
@@ -59,6 +88,7 @@ export default {
     console.log(JSON.stringify({ event: "mcp", method: request.method, path: url.pathname }));
     return handleMcp(request, {
       async dispatch(op, args) {
+        if (op === "submit_listing" || op === "listing_status") return listingDispatch(env, op, args || {});
         if (op === "list_jobs" || op === "get_job") {
           const config = relayConfig(envRecord(env));
           const market = createMarket({ config, dryRun: config.dryRun });

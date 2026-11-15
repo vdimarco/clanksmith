@@ -1,7 +1,7 @@
 // One inbox for @clanksmith. Storage claims are transactional, so a webhook retry
 // cannot pass the dedupe check twice.
 import { DurableObject } from "cloudflare:workers";
-import { addReview, claimReply, listBoardJobs, listReviews, readBoardJob, readListing, releaseClaim, remember, storeBoardJob, storeListing } from "./inbox.mjs";
+import { addReview, allowSubmit, claimReply, listBoardJobs, listReviews, listSubmissionIds, readBoardJob, readListing, readSubmission, readSubmissionKey, releaseClaim, remember, storeBoardJob, storeListing, storeSubmission, storeSubmissionKey } from "./inbox.mjs";
 import { createTokenKeeper } from "./token.mjs";
 
 export class XInbox extends DurableObject {
@@ -33,6 +33,24 @@ export class XInbox extends DurableObject {
     }
     if (url.pathname === "/board-job" && request.method === "POST") {
       return Response.json(await storeBoardJob(this.ctx.storage, body));
+    }
+    if (url.pathname === "/submit-allow" && request.method === "POST") {
+      return Response.json({ ok: await allowSubmit(this.ctx.storage, body.key, body.now) });
+    }
+    if (url.pathname === "/submission" && request.method === "GET") {
+      return Response.json({ record: await readSubmission(this.ctx.storage, url.searchParams.get("id") || "") });
+    }
+    if (url.pathname === "/submission" && request.method === "POST") {
+      await storeSubmission(this.ctx.storage, body);
+      return Response.json({ ok: true });
+    }
+    if (url.pathname === "/submission-index") return Response.json({ ids: await listSubmissionIds(this.ctx.storage) });
+    if (url.pathname === "/submission-key" && request.method === "GET") {
+      return Response.json({ record: await readSubmissionKey(this.ctx.storage, url.searchParams.get("key") || "") });
+    }
+    if (url.pathname === "/submission-key" && request.method === "POST") {
+      await storeSubmissionKey(this.ctx.storage, body.key, body.id);
+      return Response.json({ ok: true });
     }
     if (url.pathname === "/oauth/access") {
       const accessToken = await this.tokens().accessToken(body || {});
@@ -74,6 +92,12 @@ export function durableInbox(namespace) {
     getBoardJob: (sourcePostId) => call("/board-job?source=" + encodeURIComponent(sourcePostId)).then((body) => body.job || null),
     listBoardJobs: () => call("/board-jobs").then((body) => body.jobs || []),
     saveBoardJob: (job) => call("/board-job", job),
+    allowSubmit: (key, now) => call("/submit-allow", { key, now }).then((body) => body.ok === true),
+    saveSubmission: (record) => call("/submission", record),
+    getSubmission: (id) => call("/submission?id=" + encodeURIComponent(id)).then((body) => body.record || null),
+    listSubmissionIds: () => call("/submission-index").then((body) => body.ids || []),
+    getSubmissionKey: (key) => call("/submission-key?key=" + encodeURIComponent(key)).then((body) => body.record || null),
+    saveSubmissionKey: (key, id) => call("/submission-key", { key, id }),
     accessToken: (opts = {}) => call("/oauth/access", opts).then((body) => body.accessToken || null),
   };
 }
