@@ -1,9 +1,13 @@
 {
   // Existing Worker for clanksmith.com and www.clanksmith.com.
   // Deploying this name updates that Worker, so the custom domains stay attached.
-  // index.js sends www and plain HTTP to the apex, sends /mcp to the relay, and serves ../site for every other path.
+  // index.js sends www and plain HTTP to the apex, sends /mcp to the relay, handles /x/webhook, and serves ../site for every other path.
   // Market writes stay off unless CLANKSMITH_LIVE_WRITES is true and AGENT_MARKET_DRY_RUN is false.
   // AGENT_MARKET_AGENT_TOKEN and AGENT_MARKET_BUYER_KEY are secrets. Set them with `wrangler secret put`. They are not in this file.
+  // X replies stay off until X_REPLY_MODE is set with `wrangler secret put`. It is not a plain var here, because a deploy would reset it.
+  // Allowed values are off, dry-run, and live. Do not set live in this file.
+  // Other X secrets, also via `wrangler secret put`, are not in this file:
+  // X_CLIENT_SECRET, X_API_SECRET, X_API_KEY, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET, X_OAUTH2_USER_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN.
   "name": "clanksmith",
   "main": "./index.js",
   "compatibility_date": "2026-11-14",
@@ -30,7 +34,13 @@
     "run_worker_first": true
   },
   "durable_objects": {
-    "bindings": [{ "name": "RELAY", "class_name": "ClanksmithRelay" }]
+    "bindings": [
+      { "name": "RELAY", "class_name": "ClanksmithRelay" },
+      { "name": "X_INBOX", "class_name": "XInbox" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ClanksmithRelay"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ClanksmithRelay"] },
+    { "tag": "v2", "new_sqlite_classes": ["XInbox"] }
+  ]
 }

@@ -36,6 +36,24 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
   assert.equal((await get("http://clanksmith.com/")).headers.get("location"), "https://clanksmith.com/");
 });
 
+test("/x/webhook is handled by the worker and www still redirects", async () => {
+  let assets = 0;
+  const counting = {
+    ASSETS: {
+      fetch() {
+        assets += 1;
+        return new Response("asset");
+      },
+    },
+  };
+  const denied = await handleRequest(new Request("https://clanksmith.com/x/webhook", { method: "POST", body: "{}" }), counting);
+  assert.equal(denied.status, 401);
+  assert.equal(assets, 0);
+  const www = await handleRequest(new Request("https://www.clanksmith.com/x/webhook?crc_token=1"), counting);
+  assert.equal(www.status, 301);
+  assert.equal(www.headers.get("location"), "https://clanksmith.com/x/webhook?crc_token=1");
+});
+
 test("/mcp goes to the relay and www still redirects", async () => {
   let assets = 0;
   const counting = {

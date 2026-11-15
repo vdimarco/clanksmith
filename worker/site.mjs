@@ -1,6 +1,8 @@
 // Response rules for the clanksmith.com Worker.
 // www and plain HTTP go to https://clanksmith.com.
-// /mcp is the relay. Every other path is a static asset from ../site.
+// /mcp is the relay. /x/webhook and /x/review are the X reply inbox.
+// Every other path is a static asset from ../site.
+import { handleX } from "./x/handle.mjs";
 
 const SECURITY = {
   "strict-transport-security": "max-age=31536000; includeSubDomains",
@@ -49,6 +51,7 @@ export async function handleRequest(request, env, options = {}) {
     }
   }
   if (isRelayPath(url.pathname)) return options.relay(relayRequest(request));
+  if (url.pathname === "/x/webhook" || url.pathname === "/x/review") return handleX(request, env, options);
   const asset = await env.ASSETS.fetch(request);
   const response = new Response(asset.body, asset);
   for (const [name, value] of Object.entries(SECURITY)) response.headers.set(name, value);

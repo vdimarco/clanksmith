@@ -54,7 +54,7 @@ The recorded funding transaction is a transfer signed by the requester:
 
 ## What live X posting needs
 
-The run does not post to X. `x/reply.mjs` will post only when it is called with `dryRun: false` and all of these are set for a dedicated bot account. Do not use `proto_von`. This run does not create the bot.
+The clanksmith.com Worker answers mentions and direct messages from a webhook. That path, the secrets, and the off / dry-run / live switch are in the repository README under X replies. This folder does not post to X. `x/reply.mjs` will post only when it is called with `dryRun: false` and all of these are set for a dedicated bot account. Do not use `proto_von`. This run does not create the bot.
 
 - `X_API_KEY`: the app's consumer key
 - `X_API_SECRET`: the app's consumer secret
