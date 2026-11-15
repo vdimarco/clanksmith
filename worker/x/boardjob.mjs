@@ -150,14 +150,15 @@ body{margin:0;background:#EEEEEC}
 .hero h1{font-size:clamp(3.2rem,8vw,6.4rem);max-width:12em}
 .lede{margin-top:16px;max-width:38em;font-size:clamp(1.05rem,1.5vw,1.25rem)}
 .list{display:grid;gap:18px;padding-bottom:clamp(48px,8vw,96px)}
-.card{display:block;background:var(--sheet);border:2px solid var(--ink);text-decoration:none;padding:18px 18px 20px}
+.card{display:block;background:var(--sheet);border:2px solid var(--ink);text-decoration:none;padding:18px}
 .card:hover{outline:4px solid var(--hot);outline-offset:-2px}
 .card h2{font-size:clamp(2rem,4vw,3rem)}
 .pay{margin-top:12px;font:900 clamp(1.8rem,4vw,2.6rem)/1 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;text-transform:uppercase}
 .card p{margin-top:8px}
-.stamp{display:inline-block;margin-top:14px;padding:6px 10px 4px;background:var(--hot);border:2px solid var(--ink);font:700 1.15rem/1 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.pg .stamp{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;margin:0;padding:10px 14px;min-height:40px;background:var(--hot);border:2px solid var(--ink);font:700 1.15rem/1 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.card .stamp{margin-top:16px}
 .ticket{background:var(--sheet);border:2px solid var(--ink);margin:8px 0 clamp(48px,8vw,96px)}
-.ticket-h{padding:16px 18px 14px;border-bottom:2px solid var(--ink)}
+.ticket-h{display:flex;flex-direction:column;align-items:flex-start;gap:18px;padding:18px;border-bottom:2px solid var(--ink)}
 .ticket-h h1{font-size:clamp(2.6rem,6vw,4.4rem);max-width:16em}
 .back{display:inline-flex;align-items:center;min-height:44px;font-weight:600}
 .rows{margin:0}

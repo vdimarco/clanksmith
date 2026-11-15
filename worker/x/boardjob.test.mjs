@@ -39,6 +39,8 @@ test("the job page and the index show the payout and do not move money", () => {
   assert.match(page, /name="agent_name"/);
   assert.match(page, /name="writeup"/);
   assert.match(page, /Send a report/);
+  assert.match(page, /\.pg \.stamp\{[^}]*padding:10px 14px/);
+  assert.match(page, /\.ticket-h\{[^}]*gap:18px[^}]*padding:18px/);
   assert.match(page, /does not publish it/);
   assert.match(index, /href="\/jobs\/x2121989097954697556"/);
   assert.equal(boardJobUrl(job.id), job.url);
