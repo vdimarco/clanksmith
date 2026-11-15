@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { HERMES_MODEL, HERMES_URL, composeReply, replyProblems } from "./compose.mjs";
+import { DEFAULT_REPLY_MODEL, HERMES_URL, composeReply, replyModel, replyProblems } from "./compose.mjs";
 import { REPLIES } from "./policy.mjs";
 
 const KEY = "hermes-test-key";
@@ -34,11 +34,13 @@ test("a valid Hermes reply is used and the request names the model, the hint, an
     },
   });
   assert.equal(HERMES_URL, "https://inference-api.nousresearch.com/v1/chat/completions");
-  assert.equal(HERMES_MODEL, "Hermes-4-70B");
+  assert.equal(DEFAULT_REPLY_MODEL, "anthropic/claude-haiku-5.5");
+  assert.equal(replyModel({}), DEFAULT_REPLY_MODEL);
+  assert.equal(replyModel({ REPLY_MODEL: "anthropic/claude-sonnet-5.5" }), "anthropic/claude-sonnet-5.5");
   assert.equal(seen.url, HERMES_URL);
   assert.equal(seen.opts.headers.authorization, "Bearer " + KEY);
   const body = JSON.parse(seen.opts.body);
-  assert.equal(body.model, HERMES_MODEL);
+  assert.equal(body.model, DEFAULT_REPLY_MODEL);
   const system = body.messages.find((message) => message.role === "system").content;
   const user = body.messages.find((message) => message.role === "user").content;
   assert.match(system, /untrusted/i);
@@ -69,6 +71,9 @@ test("a reply the validator rejects falls back to the template after one retry",
   assert.equal(calls, 2);
   assert.equal(result.source, "template");
   assert.equal(result.text, REPLIES.what);
+  assert.ok(result.fallback.includes("opener"));
+  assert.ok(result.fallback.includes("price"));
+  assert.ok(result.fallback.includes("accept"));
 });
 
 test("a timeout retries once and then uses the template", async () => {
@@ -89,6 +94,7 @@ test("a timeout retries once and then uses the template", async () => {
   assert.equal(calls, 2);
   assert.equal(result.source, "template");
   assert.equal(result.text, REPLIES.default);
+  assert.deepEqual(result.fallback, ["timeout"]);
 });
 
 test("instructions hidden in the post cannot override the system prompt", async () => {
@@ -130,6 +136,27 @@ test("without an API key the template is used and Hermes is not called", async (
   assert.equal(calls, 0);
   assert.equal(result.source, "template");
   assert.equal(result.text, REPLIES.hire);
+  assert.deepEqual(result.fallback, ["missing-key"]);
+});
+
+const INVOICE = "@clanksmith I need someone to turn 400 messy PDF invoices into a clean spreadsheet by Friday. what's the move?";
+
+test("a job post about 400 invoices keeps a tailored reply", async () => {
+  const tailored = "Those 400 invoices by Friday are a real cleanup. What budget should agents bid against? https://clanksmith.com";
+  const result = await composeReply({
+    event: { id: "77", username: "buyer", text: INVOICE },
+    reason: "default",
+    template: REPLIES.default,
+    env: { HERMES_API_KEY: KEY },
+    fetchImpl: async () => completion(tailored),
+  });
+  assert.equal(result.source, "llm");
+  assert.equal(result.text, tailored);
+  assert.equal(result.fallback, undefined);
+  assert.deepEqual(replyProblems(tailored, { authorHandle: "buyer" }), []);
+  assert.deepEqual(replyProblems("I can handle the shape of those 400 invoices. What budget should agents bid on? https://clanksmith.com", { authorHandle: "buyer" }), []);
+  assert.ok(replyProblems("I'll do those 400 invoices for $50.", { authorHandle: "buyer" }).includes("accept"));
+  assert.ok(replyProblems("I'll do those 400 invoices for $50.", { authorHandle: "buyer" }).includes("price"));
 });
 
 test("the validator blocks dashes, other mentions, hashtags, and promises", () => {

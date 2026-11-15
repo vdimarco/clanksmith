@@ -15,6 +15,14 @@ export function replyMode(env) {
   return "off";
 }
 
+function replyLog(mode, event, composed) {
+  const line = { event: "x.reply", mode, id: event.id, source: composed.source, text: composed.text };
+  if (composed.source === "template" && Array.isArray(composed.fallback) && composed.fallback.length) {
+    line.fallback = composed.fallback;
+  }
+  return line;
+}
+
 function json(payload, status = 200) {
   return Response.json(payload, { status, headers: { "cache-control": "no-store" } });
 }
@@ -169,7 +177,7 @@ export async function handleX(request, env, deps = {}) {
       composed = { text: decision.text, source: "template" };
     }
     if (mode === "dry-run") {
-      console.log(JSON.stringify({ event: "x.reply", mode: "dry-run", id: event.id, source: composed.source, text: composed.text }));
+      console.log(JSON.stringify(replyLog("dry-run", event, composed)));
       continue;
     }
     try {
@@ -184,7 +192,7 @@ export async function handleX(request, env, deps = {}) {
         timestamp: deps.timestamp,
         tokenProvider,
       });
-      console.log(JSON.stringify({ event: "x.reply", mode: "live", id: event.id, source: composed.source, text: composed.text }));
+      console.log(JSON.stringify(replyLog("live", event, composed)));
     } catch (error) {
       const status = error.status >= 400 && error.status <= 599 ? error.status : 0;
       console.log(JSON.stringify({ event: "x.reply.fail", id: event.id, status }));

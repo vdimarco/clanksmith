@@ -130,6 +130,37 @@ test("a bare hey mention from proto_von is replied to with the intro", async () 
   assert.equal(sent[0].text.includes("\u2014"), false);
 });
 
+test("a rejected model reply logs fallback reasons and does not send them", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  let posted = 0;
+  try {
+    await handleX(postRequest(question), env({
+      X_REPLY_MODE: "dry-run",
+      HERMES_API_KEY: "hermes-test-key",
+    }), {
+      inbox,
+      llmFetch: async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ message: { content: "I'll do it for $50." } }] }),
+      }),
+      fetchImpl: async () => { posted += 1; throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T06:00:00.000Z"),
+    });
+  } finally {
+    console.log = original;
+  }
+  assert.equal(posted, 0);
+  const line = logs.map((entry) => { try { return JSON.parse(entry); } catch { return null; } }).find((entry) => entry && entry.event === "x.reply");
+  assert.equal(line.source, "template");
+  assert.ok(line.fallback.includes("price"));
+  assert.ok(line.fallback.includes("accept"));
+  assert.equal(JSON.stringify(line).includes("hermes-test-key"), false);
+});
+
 test("live mode posts once, ignores the bot's own user id, and keeps refunds for review", async () => {
   const inbox = createMemoryInbox();
   const sent = [];
