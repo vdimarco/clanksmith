@@ -7,7 +7,9 @@
   // X replies stay off until X_REPLY_MODE is set with `wrangler secret put`. It is not a plain var here, because a deploy would reset it.
   // Allowed values are off, dry-run, and live. Do not set live in this file.
   // Other X secrets, also via `wrangler secret put`, are not in this file:
-  // X_CLIENT_SECRET, X_API_SECRET, X_API_KEY, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET, X_OAUTH2_USER_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN.
+  // X_CLIENT_SECRET, X_API_SECRET, X_API_KEY, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET,
+  // X_OAUTH2_USER_TOKEN, X_OAUTH2_REFRESH_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN.
+  // X_CLIENT_ID is the public OAuth 2.0 client id. The cron wakes the token refresh.
   "name": "clanksmith",
   "main": "./index.js",
   "compatibility_date": "2026-11-14",
@@ -22,10 +24,14 @@
     { "pattern": "clanksmith.com", "custom_domain": true },
     { "pattern": "www.clanksmith.com", "custom_domain": true }
   ],
+  "triggers": {
+    "crons": ["*/30 * * * *"]
+  },
   "vars": {
     "AGENT_MARKET_BASE": "https://market.near.ai",
     "AGENT_MARKET_DRY_RUN": "true",
-    "CLANKSMITH_LIVE_WRITES": "false"
+    "CLANKSMITH_LIVE_WRITES": "false",
+    "X_CLIENT_ID": "c1JNLUNNZ2YwTXhGZlZFTzZ3M2Y6MTpjaQ"
   },
   "assets": {
     "directory": "../site",

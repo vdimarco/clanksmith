@@ -12,7 +12,7 @@ function numericId(id, label) {
   }
 }
 
-export async function deliverReply({ kind, text, replyTo, participantId, env, fetchImpl = globalThis.fetch, nonce, timestamp }) {
+export async function deliverReply({ kind, text, replyTo, participantId, env, fetchImpl = globalThis.fetch, nonce, timestamp, tokenProvider }) {
   assertBot(env.X_BOT_USERNAME || "clanksmith");
   const bot = { ...env, X_BOT_USERNAME: env.X_BOT_USERNAME || "clanksmith" };
   let url;
@@ -27,32 +27,52 @@ export async function deliverReply({ kind, text, replyTo, participantId, env, fe
     body = { text, reply: { in_reply_to_tweet_id: String(replyTo) } };
   }
   const headers = { "content-type": "application/json" };
-  if (bot.X_OAUTH2_USER_TOKEN) {
-    headers.authorization = "Bearer " + bot.X_OAUTH2_USER_TOKEN;
-  } else {
-    const missing = ["X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"].filter((name) => !bot[name]);
-    if (missing.length) {
-      const error = new Error("live X reply needs user credentials: " + missing.join(", "));
-      error.status = 503;
+  const post = async (authorization) => {
+    const res = await fetchImpl(url, {
+      method: "POST",
+      headers: { ...headers, authorization },
+      body: JSON.stringify(body),
+    });
+    const payload = await res.json().catch(() => ({}));
+    return { res, payload };
+  };
+  let bearer = null;
+  if (tokenProvider) bearer = await tokenProvider();
+  else if (bot.X_OAUTH2_USER_TOKEN) bearer = bot.X_OAUTH2_USER_TOKEN;
+  if (bearer) {
+    let sent = await post("Bearer " + bearer);
+    if (sent.res.status === 401 && tokenProvider) {
+      const next = await tokenProvider({ force: true, unacceptable: bearer });
+      if (next && next !== bearer) sent = await post("Bearer " + next);
+    }
+    if (!sent.res.ok) {
+      const error = new Error("X API " + (sent.res.status || "error"));
+      error.status = sent.res.status || 502;
       throw error;
     }
-    headers.authorization = oauthHeader({
-      method: "POST",
-      url,
-      consumerKey: bot.X_API_KEY,
-      consumerSecret: bot.X_API_SECRET,
-      token: bot.X_ACCESS_TOKEN,
-      tokenSecret: bot.X_ACCESS_TOKEN_SECRET,
-      nonce: nonce || crypto.randomUUID().replace(/-/g, ""),
-      timestamp: timestamp || Math.floor(Date.now() / 1000),
-    });
+    return { id: sent.payload?.data?.id || sent.payload?.data?.dm_event_id || null };
   }
-  const res = await fetchImpl(url, { method: "POST", headers, body: JSON.stringify(body) });
-  const payload = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const error = new Error("X API " + (res.status || "error"));
-    error.status = res.status || 502;
+  const missing = ["X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"].filter((name) => !bot[name]);
+  if (missing.length) {
+    const error = new Error("live X reply needs user credentials: " + missing.join(", "));
+    error.status = 503;
     throw error;
   }
-  return { id: payload?.data?.id || payload?.data?.dm_event_id || null };
+  headers.authorization = oauthHeader({
+    method: "POST",
+    url,
+    consumerKey: bot.X_API_KEY,
+    consumerSecret: bot.X_API_SECRET,
+    token: bot.X_ACCESS_TOKEN,
+    tokenSecret: bot.X_ACCESS_TOKEN_SECRET,
+    nonce: nonce || crypto.randomUUID().replace(/-/g, ""),
+    timestamp: timestamp || Math.floor(Date.now() / 1000),
+  });
+  const sent = await post(headers.authorization);
+  if (!sent.res.ok) {
+    const error = new Error("X API " + (sent.res.status || "error"));
+    error.status = sent.res.status || 502;
+    throw error;
+  }
+  return { id: sent.payload?.data?.id || sent.payload?.data?.dm_event_id || null };
 }

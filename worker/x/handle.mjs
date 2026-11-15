@@ -111,6 +111,8 @@ export async function handleX(request, env, deps = {}) {
   }
   const inbox = await inboxFor(env, deps);
   if (!inbox) return json({ error: "inbox is not configured" }, 503);
+  const tokenProvider = deps.tokenProvider
+    || (typeof inbox.accessToken === "function" ? (opts) => inbox.accessToken(opts) : null);
   const now = deps.now ? deps.now() : Date.now();
   const botId = BOT_USER_ID;
 
@@ -167,6 +169,7 @@ export async function handleX(request, env, deps = {}) {
         fetchImpl: deps.fetchImpl,
         nonce: deps.nonce,
         timestamp: deps.timestamp,
+        tokenProvider,
       });
       console.log(JSON.stringify({ event: "x.reply", mode: "live", id: event.id }));
     } catch (error) {

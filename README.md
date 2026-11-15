@@ -158,11 +158,16 @@ Set each one with `npx wrangler secret put NAME --config worker/wrangler.jsonc`.
 | `X_API_KEY` | OAuth 1.0a consumer key. Needed to post when you are not using an OAuth 2.0 user token. |
 | `X_ACCESS_TOKEN` | OAuth 1.0a user access token for @clanksmith. |
 | `X_ACCESS_TOKEN_SECRET` | OAuth 1.0a user access token secret for @clanksmith. |
-| `X_OAUTH2_USER_TOKEN` | OAuth 2.0 user token for @clanksmith. Subscribes to private events and, when set, posts the replies and DMs. Scopes: `tweet.read`, `tweet.write`, `dm.read`, `dm.write`, `users.read`, `offline.access`. |
+| `X_OAUTH2_USER_TOKEN` | OAuth 2.0 user access token for @clanksmith. It lasts about 2 hours. The Worker copies it into `XInbox` on first use and then refreshes it. Scopes: `tweet.read`, `tweet.write`, `dm.read`, `dm.write`, `users.read`, `offline.access`. |
+| `X_OAUTH2_REFRESH_TOKEN` | OAuth 2.0 refresh token for that same user. X rotates it on every refresh. The Worker stores the latest one in `XInbox`. This secret is only the seed, and a fallback if you put a new refresh token here after a re-authorization. |
 | `X_BEARER_TOKEN` | App-only bearer token. The registration script uses it once to create the webhook. It does not sign the CRC. |
 | `X_REVIEW_TOKEN` | Bearer token for `GET /x/review`. Use a long random string. That route stays closed when this secret is unset. |
 
-Posting uses `X_OAUTH2_USER_TOKEN` when it is set, and otherwise `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET` together. The username defaults to `clanksmith`. The user id is `1065743939729309697`. The same names are listed in `x/README.md` for the older testnet dry run (`X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`).
+`X_CLIENT_ID` is a plain var in `worker/wrangler.jsonc` (the OAuth 2.0 client id). It is not a secret. Posting uses a refreshed OAuth 2.0 user token when `X_CLIENT_ID`, `X_CLIENT_SECRET`, and a refresh token are available. Otherwise it uses `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET` together. The username defaults to `clanksmith`. The user id is `1065743939729309697`. The same OAuth 1.0a names are listed in `x/README.md` for the older testnet dry run.
+
+### User token refresh
+
+The access token expires about 2 hours after X issues it. A cron runs every 30 minutes (`*/30 * * * *`). The Worker refreshes when fewer than 30 minutes remain, which is about 90 minutes into that 2 hour life, and again if a post comes back 401. The refresh is `POST https://api.x.com/2/oauth2/token` with Basic auth (`client_id:client_secret`) and `grant_type=refresh_token`. X returns a new refresh token and the previous one stops working, so the new access token, expiry, and refresh token are written to `XInbox` before the new access token is used. Overlapping refreshes share that one write, so a rotated refresh token is not lost. Tokens are not written to logs. After the first successful refresh, the copy in `XInbox` is the one that matters. Do not spend `X_OAUTH2_REFRESH_TOKEN` in another tool, or the stored one and the secret will disagree. To recover, set a new refresh token with `wrangler secret put X_OAUTH2_REFRESH_TOKEN` and the Worker will try it after the stored one fails.
 
 ### What a reply will and will not say
 
