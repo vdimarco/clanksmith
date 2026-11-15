@@ -64,6 +64,44 @@ test("a non numeric reply target is refused before any request", async () => {
   assert.equal(called, 0);
 });
 
+test("a 401 refreshes the user token once and retries with the new bearer", async () => {
+  const seen = [];
+  let calls = 0;
+  await deliverReply({
+    kind: "post",
+    text: "Hello",
+    replyTo: "555",
+    env: { ...oauth1, X_OAUTH2_USER_TOKEN: "stale-access" },
+    tokenProvider: async (opts = {}) => opts.force ? "fresh-access" : "stale-access",
+    fetchImpl: async (_url, opts) => {
+      calls += 1;
+      seen.push(opts.headers.authorization);
+      if (calls === 1) return { ok: false, status: 401, json: async () => ({}) };
+      return { ok: true, json: async () => ({ data: { id: "1" } }) };
+    },
+  });
+  assert.deepEqual(seen, ["Bearer stale-access", "Bearer fresh-access"]);
+});
+
+test("a token provider that has no user token falls back to OAuth 1.0a", async () => {
+  let authorization = "";
+  await deliverReply({
+    kind: "post",
+    text: "Hello",
+    replyTo: "555",
+    env: oauth1,
+    tokenProvider: async () => null,
+    nonce: "n1",
+    timestamp: 1700000000,
+    fetchImpl: async (_url, opts) => {
+      authorization = opts.headers.authorization;
+      return { ok: true, json: async () => ({ data: { id: "1" } }) };
+    },
+  });
+  assert.equal(authorization.startsWith("OAuth "), true);
+  assert.equal(authorization.includes("token-secret-value"), false);
+});
+
 test("posting as proto_von is refused", async () => {
   await assert.rejects(() => deliverReply({
     kind: "post",

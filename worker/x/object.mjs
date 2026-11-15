@@ -2,6 +2,7 @@
 // cannot pass the dedupe check twice.
 import { DurableObject } from "cloudflare:workers";
 import { addReview, claimReply, listReviews, releaseClaim, remember } from "./inbox.mjs";
+import { createTokenKeeper } from "./token.mjs";
 
 export class XInbox extends DurableObject {
   async fetch(request) {
@@ -18,7 +19,22 @@ export class XInbox extends DurableObject {
       return Response.json({ ok: true });
     }
     if (url.pathname === "/reviews") return Response.json(await listReviews(this.ctx.storage));
+    if (url.pathname === "/oauth/access") {
+      const accessToken = await this.tokens().accessToken(body || {});
+      return Response.json({ accessToken });
+    }
     return Response.json({ error: "not found" }, { status: 404 });
+  }
+
+  tokens() {
+    if (!this.keeper) {
+      this.keeper = createTokenKeeper({
+        storage: this.ctx.storage,
+        env: this.env,
+        now: () => Date.now(),
+      });
+    }
+    return this.keeper;
   }
 }
 
@@ -38,5 +54,6 @@ export function durableInbox(namespace) {
     remember: (opts) => call("/remember", opts),
     review: (item) => call("/review", item),
     reviews: () => call("/reviews"),
+    accessToken: (opts = {}) => call("/oauth/access", opts).then((body) => body.accessToken || null),
   };
 }
