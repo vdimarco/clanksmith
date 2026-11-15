@@ -20,6 +20,8 @@ test("an X Activity mention and a direct reply become post events", () => {
     text: "what is @clanksmith?",
     isRetweet: false,
     isQuote: false,
+    username: "",
+    parentText: "",
     encrypted: false,
     eventType: "post.mention.create",
     participantId: null,
@@ -40,6 +42,20 @@ test("an X Activity mention and a direct reply become post events", () => {
   assert.equal(reply[0].id, "556");
   assert.equal(reply[0].isRetweet, false);
   assert.equal(reply[0].eventType, "post.reply.create");
+
+  const withParent = normalizeWebhook({
+    data: {
+      event_type: "post.reply.create",
+      filter: { user_id: BOT },
+      payload: { id: "2", author_id: "42", text: "hey", in_reply_to_tweet_id: "1" },
+      includes: {
+        users: [{ id: "42", username: "proto_von" }],
+        tweets: [{ id: "1", text: "Need a logo that still reads at night" }],
+      },
+    },
+  }, BOT);
+  assert.equal(withParent[0].username, "proto_von");
+  assert.equal(withParent[0].parentText, "Need a logo that still reads at night");
 });
 
 test("reposts, legacy retweets, plaintext DMs, and encrypted chats are distinguished", () => {

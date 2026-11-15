@@ -1,5 +1,6 @@
 // /x/webhook answers the CRC and accepts signed X deliveries.
 // /x/review lists messages a person should read. X_REPLY_MODE defaults to off.
+import { composeReply } from "./compose.mjs";
 import { normalizeWebhook } from "./events.mjs";
 import { HOURLY_REPLY_LIMIT } from "./inbox.mjs";
 import { BOT_USER_ID, decide } from "./policy.mjs";
@@ -155,14 +156,26 @@ export async function handleX(request, env, deps = {}) {
       }
       continue;
     }
+    let composed = { text: decision.text, source: "template" };
+    try {
+      composed = await composeReply({
+        event,
+        reason: decision.reason,
+        template: decision.text,
+        env,
+        fetchImpl: deps.llmFetch,
+      });
+    } catch {
+      composed = { text: decision.text, source: "template" };
+    }
     if (mode === "dry-run") {
-      console.log(JSON.stringify({ event: "x.reply", mode: "dry-run", id: event.id, text: decision.text }));
+      console.log(JSON.stringify({ event: "x.reply", mode: "dry-run", id: event.id, source: composed.source, text: composed.text }));
       continue;
     }
     try {
       await deliverReply({
         kind: event.kind === "dm" ? "dm" : "post",
-        text: decision.text,
+        text: composed.text,
         replyTo: event.id,
         participantId: event.participantId,
         env,
@@ -171,7 +184,7 @@ export async function handleX(request, env, deps = {}) {
         timestamp: deps.timestamp,
         tokenProvider,
       });
-      console.log(JSON.stringify({ event: "x.reply", mode: "live", id: event.id }));
+      console.log(JSON.stringify({ event: "x.reply", mode: "live", id: event.id, source: composed.source, text: composed.text }));
     } catch (error) {
       const status = error.status >= 400 && error.status <= 599 ? error.status : 0;
       console.log(JSON.stringify({ event: "x.reply.fail", id: event.id, status }));

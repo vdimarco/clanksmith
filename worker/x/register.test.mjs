@@ -47,7 +47,7 @@ test("the readme names the secrets, the mode switch, and the paid tier, without 
   assert.ok(section, "X replies section");
   assert.equal(section.includes("\u2014"), false);
   assert.equal(section.includes("\u2013"), false);
-  for (const name of ["X_CLIENT_SECRET", "X_API_SECRET", "X_API_KEY", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET", "X_OAUTH2_USER_TOKEN", "X_OAUTH2_REFRESH_TOKEN", "X_CLIENT_ID", "X_BEARER_TOKEN", "X_REVIEW_TOKEN", "X_REPLY_MODE"]) {
+  for (const name of ["X_CLIENT_SECRET", "X_API_SECRET", "X_API_KEY", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET", "X_OAUTH2_USER_TOKEN", "X_OAUTH2_REFRESH_TOKEN", "X_CLIENT_ID", "X_BEARER_TOKEN", "X_REVIEW_TOKEN", "X_REPLY_MODE", "HERMES_API_KEY"]) {
     assert.match(section, new RegExp(name));
   }
   assert.match(section, /pay-per-use/);

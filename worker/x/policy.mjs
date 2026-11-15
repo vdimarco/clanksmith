@@ -1,5 +1,6 @@
-// Reply policy for @clanksmith. Templates only. No model call.
-// A reply teaches the public loop. It never accepts work or quotes a price.
+// Reply policy for @clanksmith.
+// A reply decision carries a template. compose.mjs may replace that text.
+// It never accepts work or quotes a price.
 
 export const BOT_USER_ID = "1065743939729309697";
 
