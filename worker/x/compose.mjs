@@ -4,18 +4,25 @@
 /**
  * @typedef {Object} XReplyEnv
  * @property {string} [HERMES_API_KEY] Nous Research API key. Wrangler secret. Never commit it.
- * @property {string} [REPLY_MODEL] Optional model id on the Nous endpoint. Defaults to anthropic/claude-haiku-5.5.
+ * @property {string} [REPLY_MODEL] Optional model id on the Nous endpoint. Defaults to x-ai/grok-4.3.
  * @property {string} [X_REPLY_MODE] off, dry-run, or live.
  */
 
 export const HERMES_URL = "https://inference-api.nousresearch.com/v1/chat/completions";
-export const DEFAULT_REPLY_MODEL = "anthropic/claude-haiku-5.5";
-export const HERMES_TIMEOUT_MS = 6000;
-export const MAX_REPLY_TOKENS = 400;
+export const DEFAULT_REPLY_MODEL = "x-ai/grok-4.3";
+export const FALLBACK_REPLY_MODEL = "anthropic/claude-haiku-5.5";
+export const HERMES_TIMEOUT_MS = 15000;
+export const MAX_REPLY_TOKENS = 800;
 
 export function replyModel(env = {}) {
   const chosen = String(env.REPLY_MODEL || "").trim();
   return chosen || DEFAULT_REPLY_MODEL;
+}
+
+export function replyModels(env = {}) {
+  const primary = replyModel(env);
+  if (primary === FALLBACK_REPLY_MODEL) return [primary];
+  return [primary, FALLBACK_REPLY_MODEL];
 }
 
 const SYSTEM = [
@@ -117,7 +124,7 @@ function userMessage(event, reason, repair) {
   return lines.join("\n");
 }
 
-async function complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, repair }) {
+async function complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, repair, reasoning }) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -131,6 +138,7 @@ async function complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, re
         model,
         temperature: 0.7,
         max_tokens: MAX_REPLY_TOKENS,
+        ...(reasoning ? { reasoning_effort: "low" } : {}),
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: userMessage(event, reason, repair) },
@@ -142,6 +150,7 @@ async function complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, re
     if (!res.ok) {
       const error = new Error("hermes");
       error.reason = "http-" + (res.status || "error");
+      error.reasoningRejected = res.status === 400 && /reasoning/i.test(JSON.stringify(payload));
       throw error;
     }
     const choice = payload?.choices?.[0] || {};
@@ -167,27 +176,36 @@ export async function composeReply({ event, reason, template, env = {}, fetchImp
   const apiKey = env.HERMES_API_KEY;
   if (!apiKey) return { text: template, source: "template", fallback: ["missing-key"] };
   const authorHandle = event?.username || "";
-  const model = replyModel(env);
   const reasons = [];
   let repair = "";
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const text = await complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, repair });
-      const problems = replyProblems(text, { authorHandle });
-      if (problems.length) {
-        for (const problem of problems) remember(reasons, problem);
-        repair = problems.join(", ");
-        continue;
+  let lastModel = "";
+  for (const model of replyModels(env)) {
+    lastModel = model;
+    let reasoning = true;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const text = await complete({ fetchImpl, apiKey, event, reason, timeoutMs, model, repair, reasoning });
+        const problems = replyProblems(text, { authorHandle });
+        if (problems.length) {
+          for (const problem of problems) remember(reasons, problem);
+          repair = problems.join(", ");
+          break;
+        }
+        return { text: text.trim(), source: "llm", model, ...(reasons.length ? { fallback: reasons } : {}) };
+      } catch (error) {
+        if (error?.reasoningRejected && reasoning) {
+          reasoning = false;
+          continue;
+        }
+        const code = error?.name === "AbortError" ? "timeout" : (error?.reason || "error");
+        remember(reasons, code);
+        if (error?.draft) {
+          for (const problem of replyProblems(error.draft, { authorHandle })) remember(reasons, problem);
+        }
+        repair = code;
+        break;
       }
-      return { text: text.trim(), source: "llm" };
-    } catch (error) {
-      const code = error?.name === "AbortError" ? "timeout" : (error?.reason || "error");
-      remember(reasons, code);
-      if (error?.draft) {
-        for (const problem of replyProblems(error.draft, { authorHandle })) remember(reasons, problem);
-      }
-      repair = code;
     }
   }
-  return { text: template, source: "template", fallback: reasons };
+  return { text: template, source: "template", model: lastModel, fallback: reasons };
 }

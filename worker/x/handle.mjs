@@ -17,9 +17,8 @@ export function replyMode(env) {
 
 function replyLog(mode, event, composed) {
   const line = { event: "x.reply", mode, id: event.id, source: composed.source, text: composed.text };
-  if (composed.source === "template" && Array.isArray(composed.fallback) && composed.fallback.length) {
-    line.fallback = composed.fallback;
-  }
+  if (composed.model) line.model = composed.model;
+  if (Array.isArray(composed.fallback) && composed.fallback.length) line.fallback = composed.fallback;
   return line;
 }
 
@@ -124,6 +123,7 @@ export async function handleX(request, env, deps = {}) {
     || (typeof inbox.accessToken === "function" ? (opts) => inbox.accessToken(opts) : null);
   const now = deps.now ? deps.now() : Date.now();
   const botId = BOT_USER_ID;
+  const pending = [];
 
   for (const event of normalizeWebhook(body, botId)) {
     const decision = decide(event);
@@ -164,6 +164,21 @@ export async function handleX(request, env, deps = {}) {
       }
       continue;
     }
+    // The id is claimed before the 200, so a webhook retry cannot post twice
+    // while the model call is still running.
+    pending.push({ event, decision });
+  }
+  const work = publishReplies(pending, { mode, env, deps, tokenProvider });
+  if (deps.ctx && typeof deps.ctx.waitUntil === "function") {
+    deps.ctx.waitUntil(work);
+    return json({ ok: true });
+  }
+  await work;
+  return json({ ok: true });
+}
+
+async function publishReplies(pending, { mode, env, deps, tokenProvider }) {
+  for (const { event, decision } of pending) {
     let composed = { text: decision.text, source: "template" };
     try {
       composed = await composeReply({
@@ -181,26 +196,36 @@ export async function handleX(request, env, deps = {}) {
       continue;
     }
     try {
-      await deliverReply({
-        kind: event.kind === "dm" ? "dm" : "post",
-        text: composed.text,
-        replyTo: event.id,
-        participantId: event.participantId,
-        env,
-        fetchImpl: deps.fetchImpl,
-        nonce: deps.nonce,
-        timestamp: deps.timestamp,
-        tokenProvider,
-      });
+      await postReply(event, composed.text, env, deps, tokenProvider);
       console.log(JSON.stringify(replyLog("live", event, composed)));
     } catch (error) {
       const status = error.status >= 400 && error.status <= 599 ? error.status : 0;
+      if (status && status !== 400) {
+        try {
+          await postReply(event, composed.text, env, deps, tokenProvider);
+          console.log(JSON.stringify(replyLog("live", event, composed)));
+          continue;
+        } catch (retryError) {
+          const retryStatus = retryError.status >= 400 && retryError.status <= 599 ? retryError.status : status;
+          console.log(JSON.stringify({ event: "x.reply.fail", id: event.id, status: retryStatus }));
+          continue;
+        }
+      }
       console.log(JSON.stringify({ event: "x.reply.fail", id: event.id, status }));
-      // A 400 is a local refusal (bad id). Keep the claim so X does not retry it forever.
-      if (!status || status === 400) continue;
-      await inbox.release(event.id);
-      return json({ error: "delivery failed" }, status);
     }
   }
-  return json({ ok: true });
+}
+
+function postReply(event, text, env, deps, tokenProvider) {
+  return deliverReply({
+    kind: event.kind === "dm" ? "dm" : "post",
+    text,
+    replyTo: event.id,
+    participantId: event.participantId,
+    env,
+    fetchImpl: deps.fetchImpl,
+    nonce: deps.nonce,
+    timestamp: deps.timestamp,
+    tokenProvider,
+  });
 }

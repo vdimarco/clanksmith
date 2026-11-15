@@ -256,30 +256,53 @@ test("off mode acknowledges a signed event and sends nothing", async () => {
   assert.equal((await inbox.reviews()).length, 0);
 });
 
-test("a failed live send releases the claim so a retry can post", async () => {
+test("the webhook returns 200 before the model finishes, and a retry does not post twice", async () => {
   const inbox = createMemoryInbox();
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const jobs = [];
+  const ctx = { waitUntil(promise) { jobs.push(promise); } };
   let calls = 0;
-  const fetchImpl = async () => {
-    calls += 1;
-    if (calls === 1) return { ok: false, status: 503, json: async () => ({ error: "nope" }) };
-    return { ok: true, json: async () => ({ data: { id: "1" } }) };
-  };
-  const credentials = {
+  let responded = false;
+  const responsePromise = handleX(postRequest(question), env({
     X_BOT_USERNAME: "clanksmith",
     X_OAUTH2_USER_TOKEN: "user-token-value",
-    X_API_SECRET: SECRET,
-  };
-  const first = await handleX(postRequest(question), env(credentials), {
+    HERMES_API_KEY: "hermes-test-key",
+  }), {
     inbox,
-    fetchImpl,
+    ctx,
+    llmFetch: async () => {
+      await gate;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ finish_reason: "stop", message: { content: "Hey. What do you want done? https://clanksmith.com" } }] }),
+      };
+    },
+    fetchImpl: async () => {
+      calls += 1;
+      return { ok: calls === 1 ? false : true, status: calls === 1 ? 503 : 200, json: async () => ({ data: { id: "1" } }) };
+    },
     now: () => Date.parse("2026-11-15T05:00:00.000Z"),
   });
-  assert.equal(first.status, 503);
-  const second = await handleX(postRequest(question), env(credentials), {
+  const response = await responsePromise;
+  assert.equal(response.status, 200);
+  assert.equal(calls, 0);
+  responded = true;
+  release();
+  await Promise.all(jobs);
+  assert.equal(responded, true);
+  assert.equal(calls, 2);
+  const again = await handleX(postRequest(question), env({
+    X_BOT_USERNAME: "clanksmith",
+    X_OAUTH2_USER_TOKEN: "user-token-value",
+  }), {
     inbox,
-    fetchImpl,
+    ctx,
+    fetchImpl: async () => { calls += 1; return { ok: true, json: async () => ({ data: { id: "2" } }) }; },
     now: () => Date.parse("2026-11-15T05:00:01.000Z"),
   });
-  assert.equal(second.status, 200);
+  await Promise.all(jobs);
+  assert.equal(again.status, 200);
   assert.equal(calls, 2);
 });

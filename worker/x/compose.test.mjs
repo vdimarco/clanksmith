@@ -34,13 +34,15 @@ test("a valid Hermes reply is used and the request names the model, the hint, an
     },
   });
   assert.equal(HERMES_URL, "https://inference-api.nousresearch.com/v1/chat/completions");
-  assert.equal(DEFAULT_REPLY_MODEL, "anthropic/claude-haiku-5.5");
+  assert.equal(DEFAULT_REPLY_MODEL, "x-ai/grok-4.3");
   assert.equal(replyModel({}), DEFAULT_REPLY_MODEL);
   assert.equal(replyModel({ REPLY_MODEL: "anthropic/claude-sonnet-5.5" }), "anthropic/claude-sonnet-5.5");
   assert.equal(seen.url, HERMES_URL);
   assert.equal(seen.opts.headers.authorization, "Bearer " + KEY);
   const body = JSON.parse(seen.opts.body);
   assert.equal(body.model, DEFAULT_REPLY_MODEL);
+  assert.equal(body.reasoning_effort, "low");
+  assert.equal(result.model, DEFAULT_REPLY_MODEL);
   const system = body.messages.find((message) => message.role === "system").content;
   const user = body.messages.find((message) => message.role === "user").content;
   assert.match(system, /untrusted/i);
@@ -190,6 +192,49 @@ test("a bare hey is rewritten in the first person after a third-person draft", a
   assert.equal(result.source, "llm");
   assert.equal(result.text, tailored);
   assert.deepEqual(replyProblems(tailored, { authorHandle: "proto_von" }), []);
+});
+
+test("Grok is tried first and Haiku answers if Grok fails the check", async () => {
+  const tailored = "Hey. What do you want done? https://clanksmith.com";
+  const models = [];
+  const result = await composeReply({
+    event: { id: "9", username: "proto_von", text: "hey @clanksmith" },
+    reason: "default",
+    template: REPLIES.default,
+    env: { HERMES_API_KEY: KEY },
+    fetchImpl: async (_url, opts) => {
+      const body = JSON.parse(opts.body);
+      models.push(body.model);
+      if (body.model === "x-ai/grok-4.3") return completion("Clanksmith is happy to chat.");
+      return completion(tailored);
+    },
+  });
+  assert.deepEqual(models, ["x-ai/grok-4.3", "anthropic/claude-haiku-5.5"]);
+  assert.equal(result.source, "llm");
+  assert.equal(result.model, "anthropic/claude-haiku-5.5");
+  assert.equal(result.text, tailored);
+  assert.ok(result.fallback.includes("third-person"));
+});
+
+test("a gateway that rejects reasoning_effort is retried without that field", async () => {
+  let sawLow = false;
+  const result = await composeReply({
+    event,
+    reason: "default",
+    template: REPLIES.default,
+    env: { HERMES_API_KEY: KEY },
+    fetchImpl: async (_url, opts) => {
+      const body = JSON.parse(opts.body);
+      if (body.reasoning_effort) {
+        sawLow = true;
+        return { ok: false, status: 400, json: async () => ({ error: "unknown field reasoning_effort" }) };
+      }
+      return completion("That midnight blue owl has to stay readable at night. What should still be obvious at a glance? https://clanksmith.com");
+    },
+  });
+  assert.equal(sawLow, true);
+  assert.equal(result.source, "llm");
+  assert.equal(result.model, "x-ai/grok-4.3");
 });
 
 test("a job post about 400 invoices keeps a tailored reply", async () => {
