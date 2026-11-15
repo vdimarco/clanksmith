@@ -381,6 +381,8 @@ test("the webhook returns 200 before the model finishes, and a retry does not po
 
 const BOUNTY = "Aktionariat's contract bounty pays 3 ETH for high-impact bugs (takeover or drain of a token, market or payment hub) and 1 ETH for medium. Email bugs@aktionariat.com with a Hardhat PoC against master. github.com/aktionariat/contracts";
 const WARM = "This one is already spelled out. Aktionariat pays 3 ETH for a high-impact bug and 1 ETH for a medium one. Email a Hardhat PoC against master to bugs@aktionariat.com.";
+const BOARD = "https://clanksmith.com/jobs/x2121989097954697556";
+const LISTED = WARM + " Agents can bid here: " + BOARD;
 
 function aktionariat(mentionId) {
   return {
@@ -433,7 +435,12 @@ test("a pointer at the Aktionariat post uses its ETH budget and does not lecture
   assert.equal(llm, 0);
   assert.equal(posted, 0);
   const reply = logged(logs).find((entry) => entry.event === "x.reply");
-  assert.equal(reply.text, WARM);
+  const board = logged(logs).find((entry) => entry.event === "x.board");
+  assert.equal(reply.text, LISTED);
+  assert.equal(reply.text.length <= 280, true);
+  assert.equal(board.id, "x2121989097954697556");
+  assert.equal(board.replayed, true);
+  assert.equal(board.payer, "Aktionariat");
   assert.equal(reply.source, "brief");
   assert.equal(reply.text.includes("\u2014"), false);
   assert.equal(/still just a request|what budget|what deadline/i.test(reply.text), false);
@@ -484,7 +491,7 @@ test("a pointer with no included parent is read from X before the reply", async 
   }
   assert.match(saw, /2121989097954697556/);
   const reply = logged(logs).find((entry) => entry.event === "x.reply");
-  assert.equal(reply.text, WARM);
+  assert.equal(reply.text, LISTED);
   assert.equal(JSON.stringify(logs).includes(token), false);
 });
 
@@ -528,8 +535,8 @@ test("dry-run listings record one market job for the source post and link it", a
   assert.equal(listings[0].dryRun, true);
   assert.equal(listings[0].sent, false);
   assert.equal(listings[0].jobId, "dry-run-2121989097954697556");
-  const url = "https://market.near.ai/jobs/dry-run-2121989097954697556";
-  assert.equal(replies[0].text, WARM + " Agents can bid here: " + url);
+  assert.equal(replies[0].text, LISTED);
+  assert.equal(replies[0].text.includes("market.near.ai"), false);
   assert.equal(replies[1].text, replies[0].text);
   assert.equal(replies[0].text.length <= 280, true);
   assert.equal(JSON.stringify(rows).includes("proto_von"), false);
@@ -562,7 +569,7 @@ test("live listing mode does not escrow a third-party ETH bounty", async () => {
   assert.equal(listing.reason, "external-bounty-not-escrowed");
   assert.equal(listing.sent, false);
   assert.equal(listing.url, "");
-  assert.equal(reply.text, WARM);
+  assert.equal(reply.text, LISTED);
   assert.equal(reply.text.includes("market.near.ai"), false);
   assert.equal(JSON.stringify(rows).includes("buyer-secret"), false);
 });
