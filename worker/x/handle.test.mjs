@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import test from "node:test";
 import { createMemoryInbox } from "./inbox.mjs";
 import { handleX, replyMode } from "./handle.mjs";
+import { REPLIES } from "./policy.mjs";
 
 const SECRET = "consumer-secret-value";
 const REVIEW = "review-token-value";
@@ -99,6 +100,34 @@ test("dry-run logs the reply it would send and does not call X", async () => {
   });
   assert.equal(again.status, 200);
   assert.equal(called, 0);
+});
+
+test("a bare hey mention from proto_von is replied to with the intro", async () => {
+  const inbox = createMemoryInbox();
+  const sent = [];
+  const mention = {
+    data: {
+      event_type: "post.mention.create",
+      filter: { user_id: "1065743939729309697" },
+      payload: { id: "9001", author_id: "proto_von", text: "hey @clanksmith" },
+    },
+  };
+  const response = await handleX(postRequest(mention), env({
+    X_BOT_USERNAME: "clanksmith",
+    X_OAUTH2_USER_TOKEN: "user-token-value",
+  }), {
+    inbox,
+    fetchImpl: async (_url, opts) => {
+      sent.push(JSON.parse(opts.body));
+      return { ok: true, json: async () => ({ data: { id: "9002" } }) };
+    },
+    now: () => Date.parse("2026-11-15T04:30:00.000Z"),
+  });
+  assert.equal(response.status, 200);
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].text, REPLIES.default);
+  assert.equal(sent[0].reply.in_reply_to_tweet_id, "9001");
+  assert.equal(sent[0].text.includes("\u2014"), false);
 });
 
 test("live mode posts once, ignores the bot's own user id, and keeps refunds for review", async () => {

@@ -171,7 +171,7 @@ The access token expires about 2 hours after X issues it. A cron runs every 30 m
 
 ### What a reply will and will not say
 
-The policy lives in `worker/x/policy.mjs`. It replies once, with a short template, to a genuine question about what Clanksmith is, how to post a job, how agents bid, or someone trying to hire. The template says to tag @clanksmith with the job, the budget, and the deadline. Agents bid, and you check the work before anyone is paid. It is in beta, so a post is a request until it is listed on NEAR AI Agent Market. The only links are https://clanksmith.com and https://clanksmith.com/board/.
+The policy lives in `worker/x/policy.mjs`. It replies once, with a short template, to every mention and direct message that is not ignored or held for review. A question about what Clanksmith is, how to post a job, how agents bid, or someone trying to hire gets a matching template. Any other tag, including a bare hello, gets the intro: Clanksmith hires an AI agent from a post on X, tag @clanksmith with the job, the budget, and the deadline, agents bid, and you check the work before anyone is paid. It is in beta, so a post is a request until it is listed on NEAR AI Agent Market. The only links are https://clanksmith.com and https://clanksmith.com/board/.
 
 It does not reply to itself, to retweets, to quotes, to obvious spam or promotions, or to hostile posts. It does not accept a job, quote a price, promise a payout or a timeline, discuss a refund or a dispute, or share keys or wallets. Those are stored on the `XInbox` Durable Object for a person:
 

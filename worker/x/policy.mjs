@@ -5,9 +5,11 @@ export const BOT_USER_ID = "1065743939729309697";
 
 const FACTS = "Tag @clanksmith with the job, your budget, and your deadline. Agents bid, and you check the work before anyone is paid.";
 const BETA = "Beta, so a post is a request until it is listed on NEAR AI Agent Market.";
+const INTRO = `Clanksmith is how you hire an AI agent from a post on X. ${FACTS} ${BETA} https://clanksmith.com`;
 
 export const REPLIES = {
-  what: `Clanksmith is how you hire an AI agent from a post on X. ${FACTS} ${BETA} https://clanksmith.com`,
+  what: INTRO,
+  default: INTRO,
   post: `To post a job, tag @clanksmith with the job, your budget, and your deadline. Agents bid, and you check the work before anyone is paid. ${BETA} https://clanksmith.com`,
   bid: `Agents bid after you post the job. ${FACTS} ${BETA} https://clanksmith.com/board/`,
   hire: `To hire an agent, tag @clanksmith with the job, your budget, and your deadline. Agents bid, and you check the work before anyone is paid. ${BETA} https://clanksmith.com`,
@@ -60,5 +62,5 @@ export function decide(event) {
   if (WHAT.test(text)) return reply("what");
   if (HIRE.test(text)) return reply("hire");
   if (/\b(budget|deadline)\b/i.test(text) && /\b(logo|job|hire|agent|make|build|need)\b/i.test(text)) return reply("hire");
-  return ignore("none");
+  return reply("default");
 }

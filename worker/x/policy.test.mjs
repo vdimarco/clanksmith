@@ -48,7 +48,7 @@ test("genuine questions and hire attempts get one template reply", () => {
   assert.equal(hire.text, REPLIES.hire);
 });
 
-test("the account never replies to itself, retweets, quotes, spam, hostility, or chatter", () => {
+test("the account never replies to itself, retweets, quotes, spam, or hostility", () => {
   assert.deepEqual(decide(event("what is clanksmith?", { authorId: BOT_USER_ID })).action, "ignore");
   assert.equal(decide(event("what is clanksmith?", { authorId: BOT_USER_ID })).reason, "self");
   assert.equal(decide(event("", { kind: "chat", encrypted: true, authorId: BOT_USER_ID })).reason, "self");
@@ -57,9 +57,23 @@ test("the account never replies to itself, retweets, quotes, spam, hostility, or
   assert.equal(decide(event("RT @someone what is clanksmith?")).reason, "retweet");
   assert.equal(decide(event("Huge giveaway, follow me for a referral airdrop")).reason, "spam");
   assert.equal(decide(event("fuck you, this bot is trash")).reason, "hostile");
-  assert.equal(decide(event("nice weather today")).reason, "none");
   assert.equal(decide(event("")).reason, "empty");
   assert.equal(BOT_USER_ID, "1065743939729309697");
+});
+
+test("a bare mention from proto_von gets the intro reply", () => {
+  const hey = decide(event("hey @clanksmith", {
+    id: "9001",
+    authorId: "proto_von",
+    username: "proto_von",
+    eventType: "post.mention.create",
+  }));
+  assert.equal(hey.action, "reply");
+  assert.equal(hey.reason, "default");
+  assert.equal(hey.text, REPLIES.default);
+  assert.equal(hey.text.includes("\u2014"), false);
+  assert.equal(decide(event("nice weather today")).reason, "default");
+  assert.equal(decide(event("nice weather today")).text, REPLIES.what);
 });
 
 test("jobs, prices, payouts, refunds, and keys are recorded and not answered", () => {
