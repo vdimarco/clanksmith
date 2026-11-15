@@ -21,7 +21,12 @@ test("an X Activity mention and a direct reply become post events", () => {
     isRetweet: false,
     isQuote: false,
     username: "",
+    parentId: "",
     parentText: "",
+    parentUsername: "",
+    quotedId: "",
+    quotedText: "",
+    quotedUsername: "",
     encrypted: false,
     eventType: "post.mention.create",
     participantId: null,
@@ -55,7 +60,31 @@ test("an X Activity mention and a direct reply become post events", () => {
     },
   }, BOT);
   assert.equal(withParent[0].username, "proto_von");
+  assert.equal(withParent[0].parentId, "1");
   assert.equal(withParent[0].parentText, "Need a logo that still reads at night");
+  assert.equal(withParent[0].parentUsername, "");
+
+  const quoted = normalizeWebhook({
+    data: {
+      event_type: "post.mention.create",
+      filter: { user_id: BOT },
+      payload: {
+        id: "3",
+        author_id: "42",
+        text: "@clanksmith check out the above",
+        referenced_tweets: [{ type: "quoted", id: "9" }],
+      },
+      includes: {
+        users: [{ id: "7", username: "W3B_AI_SR" }],
+        tweets: [{ id: "9", author_id: "7", text: "Pays 3 ETH. https://t.co/abc", entities: { urls: [{ url: "https://t.co/abc", expanded_url: "https://github.com/aktionariat/contracts" }] } }],
+      },
+    },
+  }, BOT);
+  assert.equal(quoted[0].isQuote, true);
+  assert.equal(quoted[0].quotedId, "9");
+  assert.equal(quoted[0].quotedUsername, "W3B_AI_SR");
+  assert.match(quoted[0].quotedText, /github\.com\/aktionariat\/contracts/);
+  assert.equal(quoted[0].quotedText.includes("t.co"), false);
 });
 
 test("reposts, legacy retweets, plaintext DMs, and encrypted chats are distinguished", () => {

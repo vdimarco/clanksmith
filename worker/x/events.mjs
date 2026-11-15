@@ -8,16 +8,45 @@ function authorUsername(payload, includes, authorId) {
   return found?.username ? String(found.username) : "";
 }
 
-function parentText(payload, includes) {
+function expandText(tweet) {
+  if (!tweet) return "";
+  let text = String(tweet.note_tweet?.text || tweet.full_text || tweet.text || "");
+  for (const url of tweet.entities?.urls || []) {
+    if (url?.url && url?.expanded_url) text = text.split(url.url).join(url.expanded_url);
+  }
+  return text.slice(0, 2000);
+}
+
+function tweetById(includes, id) {
+  if (!id) return null;
+  return (includes?.tweets || []).find((tweet) => String(tweet.id) === String(id)) || null;
+}
+
+function nameOf(includes, authorId, fallback) {
+  if (fallback) return String(fallback).replace(/^@/, "");
+  const found = (includes?.users || []).find((user) => String(user.id) === String(authorId));
+  return found?.username ? String(found.username) : "";
+}
+
+function referenced(payload, includes) {
   const refs = Array.isArray(payload.referenced_tweets) ? payload.referenced_tweets : [];
-  const parentId = payload.in_reply_to_tweet_id || payload.in_reply_to_status_id_str
+  const parentId = String(payload.in_reply_to_tweet_id || payload.in_reply_to_status_id_str
     || refs.find((item) => item.type === "replied_to")?.id
-    || "";
-  if (!parentId) return "";
-  const tweets = includes?.tweets || [];
-  const parent = tweets.find((tweet) => String(tweet.id) === String(parentId));
-  const text = parent?.text || payload.in_reply_to_status?.text || "";
-  return String(text).slice(0, 500);
+    || "");
+  const quotedId = String(refs.find((item) => item.type === "quoted")?.id
+    || payload.quoted_status?.id_str
+    || payload.quoted_status?.id
+    || "");
+  const parent = tweetById(includes, parentId) || payload.in_reply_to_status || null;
+  const quoted = tweetById(includes, quotedId) || payload.quoted_status || null;
+  return {
+    parentId,
+    parentText: expandText(parent),
+    parentUsername: nameOf(includes, parent?.author_id || parent?.user?.id_str || parent?.user?.id, parent?.user?.screen_name || parent?.username),
+    quotedId,
+    quotedText: expandText(quoted),
+    quotedUsername: nameOf(includes, quoted?.author_id || quoted?.user?.id_str || quoted?.user?.id, quoted?.user?.screen_name || quoted?.username),
+  };
 }
 
 function postFrom(payload, eventType, includes) {
@@ -30,7 +59,7 @@ function postFrom(payload, eventType, includes) {
     authorId,
     username: authorUsername(payload, includes, authorId),
     text,
-    parentText: parentText(payload, includes),
+    ...referenced(payload, includes),
     isRetweet: eventType === "post.repost.create" || Boolean(payload.retweeted_status) || refs.some((item) => item.type === "retweeted") || /^RT @/i.test(text),
     isQuote: eventType === "post.quote.create" || Boolean(payload.quoted_status) || refs.some((item) => item.type === "quoted"),
     encrypted: false,

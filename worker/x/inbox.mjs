@@ -63,6 +63,22 @@ export async function listReviews(storage) {
   return items.map((item) => ({ ...item }));
 }
 
+export async function readListing(storage, sourcePostId) {
+  const row = await storage.get("listing:" + sourcePostId);
+  return row ? { ...row } : null;
+}
+
+export async function storeListing(storage, record) {
+  return transact(storage, async (tx) => {
+    const key = "listing:" + record.sourcePostId;
+    const existing = await tx.get(key);
+    if (existing?.jobId) return { record: { ...existing }, replayed: true };
+    const saved = { ...record };
+    await tx.put(key, saved);
+    return { record: saved, replayed: false };
+  });
+}
+
 function memoryStorage() {
   const map = new Map();
   const storage = {
@@ -82,5 +98,7 @@ export function createMemoryInbox() {
     remember: (opts) => remember(storage, opts),
     review: (item) => addReview(storage, item),
     reviews: () => listReviews(storage),
+    getListing: (sourcePostId) => readListing(storage, sourcePostId),
+    saveListing: (record) => storeListing(storage, record),
   };
 }

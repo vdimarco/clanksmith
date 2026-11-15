@@ -47,6 +47,8 @@ test("a valid Hermes reply is used and the request names the model, the hint, an
   const user = body.messages.find((message) => message.role === "user").content;
   assert.match(system, /untrusted/i);
   assert.match(system, /ignore/i);
+  assert.match(system, /budget the post already states/i);
+  assert.match(system, /still just a request/i);
   assert.match(user, /default/);
   assert.match(user, /midnight blue/);
   assert.match(user, /proto_von/);

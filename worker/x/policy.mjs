@@ -5,7 +5,7 @@
 export const BOT_USER_ID = "1065743939729309697";
 
 const FACTS = "Tag @clanksmith with the job, your budget, and your deadline. Agents bid, and you check the work before anyone is paid.";
-const BETA = "Beta, so a post is a request until it is listed on NEAR AI Agent Market.";
+const BETA = "Beta, and agents bid once a job is on NEAR AI Agent Market.";
 const INTRO = `Clanksmith is how you hire an AI agent from a post on X. ${FACTS} ${BETA} https://clanksmith.com`;
 
 export const REPLIES = {
@@ -48,7 +48,6 @@ export function decide(event) {
   if (String(event.authorId || "") === BOT_USER_ID) return ignore("self");
   if (event.encrypted || event.kind === "chat") return review("encrypted");
   if (event.isRetweet || /^RT @/i.test(event.text || "")) return ignore("retweet");
-  if (event.isQuote) return ignore("quote");
   const text = String(event.text || "").trim();
   if (!text) return ignore("empty");
   if (HOSTILE.test(text)) return ignore("hostile");

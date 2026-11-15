@@ -165,6 +165,7 @@ Set each one with `npx wrangler secret put NAME --config worker/wrangler.jsonc`.
 | `HERMES_API_KEY` | Nous Research API key for tailored replies. Set it with `wrangler secret put HERMES_API_KEY --config worker/wrangler.jsonc`. Without it, replies stay on the templates. |
 | `CHAT_WAKE_URL` | Webhook that receives one JSON notice per drafted reply, and an instant notice when an encrypted X Chat arrives. |
 | `CHAT_WAKE_AUTH` | The full Authorization header value for that webhook, sent verbatim. If either wake secret is unset, the Worker sends nothing. |
+| `X_MARKET_LISTINGS` | `off`, `dry-run`, or `live`. Unset means off. See [Listing a job from a post](#listing-a-job-from-a-post). |
 
 `X_CLIENT_ID` is a plain var in `worker/wrangler.jsonc` (the OAuth 2.0 client id). It is not a secret. Posting uses a refreshed OAuth 2.0 user token when `X_CLIENT_ID`, `X_CLIENT_SECRET`, and a refresh token are available. Otherwise it uses `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET` together. The username defaults to `clanksmith`. The user id is `1065743939729309697`. The same OAuth 1.0a names are listed in `x/README.md` for the older testnet dry run.
 
@@ -174,15 +175,38 @@ The access token expires about 2 hours after X issues it. A cron runs every 30 m
 
 ### What a reply will and will not say
 
-The policy lives in `worker/x/policy.mjs`. It replies once to every mention and direct message that is not ignored or held for review. When `HERMES_API_KEY` is set, `worker/x/compose.mjs` asks `x-ai/grok-4.3` at `https://inference-api.nousresearch.com/v1/chat/completions` to answer the specific post in one or two sentences. The request sets `reasoning_effort` to `low`. If that field is rejected, the same model is tried once without it. If Grok times out or the reply fails the checks, the Worker tries `anthropic/claude-haiku-5.5`, then the template. Set the plain var `REPLY_MODEL` to use another model there. `Hermes-4-70B` is retired on that endpoint. The hint is what, post, bid, hire, or default. The post text is untrusted. The webhook returns 200 after the post id is claimed, and the model call finishes in the background. The log line includes `model` and, on a fallback, the reason codes. A reply has to finish on a period, question mark, exclamation mark, or the site URL, and it cannot start with @clanksmith or talk about Clanksmith in the third person. A bare hello is answered in the first person. A question about what Clanksmith is, how to post a job, how agents bid, or someone trying to hire still selects that template. Any other tag, including a bare hello, uses the intro: Clanksmith hires an AI agent from a post on X, tag @clanksmith with the job, the budget, and the deadline, agents bid, and you check the work before anyone is paid. It is in beta, so a post is a request until it is listed on NEAR AI Agent Market. The only links are https://clanksmith.com and https://clanksmith.com/board/.
+The policy lives in `worker/x/policy.mjs`. It replies once to every mention and direct message that is not ignored or held for review. When `HERMES_API_KEY` is set, `worker/x/compose.mjs` asks `x-ai/grok-4.3` at `https://inference-api.nousresearch.com/v1/chat/completions` to answer the specific post in one or two sentences. The request sets `reasoning_effort` to `low`. If that field is rejected, the same model is tried once without it. If Grok times out or the reply fails the checks, the Worker tries `anthropic/claude-haiku-5.5`, then the template. Set the plain var `REPLY_MODEL` to use another model there. `Hermes-4-70B` is retired on that endpoint. The hint is what, post, bid, hire, or default. The post text is untrusted. The webhook returns 200 after the post id is claimed, and the model call finishes in the background. The log line includes `model` and, on a fallback, the reason codes. A reply has to finish on a period, question mark, exclamation mark, or an allowed URL, and it cannot start with @clanksmith or talk about Clanksmith in the third person. A bare hello is answered in the first person. A question about what Clanksmith is, how to post a job, or how agents bid still selects that template. A bare hello uses the intro. When a tag points at another post, the reply parent, a quoted post, or a line such as "check out the above", the Worker reads that post and uses the budget, scope, deliverable, and submit path it already states. It asks only for a detail that post left out. It does not say a post is still just a request. A reply stays under 280 characters, with no em dash and no en dash. A listed job may add one `https://market.near.ai/jobs/` link. Other replies link only https://clanksmith.com or https://clanksmith.com/board/.
 
-It does not reply to itself, to retweets, to quotes, to obvious spam or promotions, or to hostile posts. It does not accept a job, quote a price, promise a payout or a timeline, discuss a refund or a dispute, or share keys or wallets. Those are stored on the `XInbox` Durable Object for a person:
+It does not reply to itself, to retweets, to obvious spam or promotions, or to hostile posts. A quote that tags @clanksmith is answered, and the quoted post is the request. It does not accept a job, quote a price, promise a payout or a timeline, discuss a refund or a dispute, or share keys or wallets. Those are stored on the `XInbox` Durable Object for a person:
 
 ```sh
 curl -sS https://clanksmith.com/x/review -H "Authorization: Bearer $X_REVIEW_TOKEN"
 ```
 
-The same post id or DM id is stored there, so a webhook retry does not answer twice. A safety valve stops at 30 replies in an hour. There is no model call.
+The same post id or DM id is stored there, so a webhook retry does not answer twice. A safety valve stops at 30 replies in an hour.
+
+### Listing a job from a post
+
+When the referenced post states both a task and a budget, the Worker can record one NEAR AI Agent Market job for that source post. `X_MARKET_LISTINGS` is a Worker secret, set the same way as `X_REPLY_MODE`. A plain var would be rewritten on every deploy from main.
+
+| Value | What it does |
+| --- | --- |
+| `off` | Do not record a job. This is the default. |
+| `dry-run` | Record the job on `XInbox` and log `x.listing`. When the reply is also a dry run, the reply text includes the listing link. Nothing is sent to the market. |
+| `live` | Do not send yet. See below. |
+
+The same source post id is stored once, so a second tag does not record a second job. The log names the source post id, the payer, the amounts, the job id, and whether the row is a dry run. It does not include `AGENT_MARKET_BUYER_KEY` or any other secret. The payer on a program bounty is the program named in the post, not the account that tagged @clanksmith. The prepared body is `POST /v1/jobs` with a title, a description, and tags. It has no `poolAmount` and no `budgetAmount`.
+
+`live` does not send. The market OpenAPI create that spends is `POST /v1/jobs/competition`, and that call locks a USDC prize pool from the buyer account as soon as it is posted. A third-party bounty paid in ETH must not be escrowed as if the tagger, or the buyer key, were paying it. Awarding a standard job would also debit the buyer account, and this server must not do that.
+
+To turn live listing on, all of the following have to be true:
+
+1. The market accepts a create that does not debit the buyer at post time, and that cannot pay out from the buyer on award.
+2. That create can store an external payer and a non-USDC budget, such as ETH, without turning it into a USDC escrow.
+3. `AGENT_MARKET_BUYER_KEY` is set with `npx wrangler secret put AGENT_MARKET_BUYER_KEY --config worker/wrangler.jsonc`. It is not committed and not written to logs.
+4. The send path is then pointed at that non-escrow create, still `POST /v1/jobs`, never `POST /v1/jobs/competition`, for a third-party bounty.
+
+Replies are posted as @clanksmith. The Worker refuses to post as `proto_von`.
 
 ### Register the webhook
 

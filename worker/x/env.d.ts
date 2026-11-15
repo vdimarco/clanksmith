@@ -15,4 +15,7 @@ export interface XReplyEnv {
   X_OAUTH2_REFRESH_TOKEN?: string;
   X_BEARER_TOKEN?: string;
   X_REVIEW_TOKEN?: string;
+  X_MARKET_LISTINGS?: string;
+  AGENT_MARKET_BASE?: string;
+  AGENT_MARKET_BUYER_KEY?: string;
 }
