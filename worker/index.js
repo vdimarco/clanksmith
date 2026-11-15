@@ -10,6 +10,7 @@ export default {
   async fetch(request, env, ctx) {
     return handleRequest(request, env, {
       relay: (next) => relay.fetch(next, env, ctx),
+      ctx,
     });
   },
   async scheduled(_event, env, ctx) {

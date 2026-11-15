@@ -130,6 +130,37 @@ test("a bare hey mention from proto_von is replied to with the intro", async () 
   assert.equal(sent[0].text.includes("\u2014"), false);
 });
 
+test("a rejected model reply logs fallback reasons and does not send them", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  let posted = 0;
+  try {
+    await handleX(postRequest(question), env({
+      X_REPLY_MODE: "dry-run",
+      HERMES_API_KEY: "hermes-test-key",
+    }), {
+      inbox,
+      llmFetch: async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ finish_reason: "stop", message: { content: "I'll do it for $50." } }] }),
+      }),
+      fetchImpl: async () => { posted += 1; throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T06:00:00.000Z"),
+    });
+  } finally {
+    console.log = original;
+  }
+  assert.equal(posted, 0);
+  const line = logs.map((entry) => { try { return JSON.parse(entry); } catch { return null; } }).find((entry) => entry && entry.event === "x.reply");
+  assert.equal(line.source, "template");
+  assert.ok(line.fallback.includes("price"));
+  assert.ok(line.fallback.includes("accept"));
+  assert.equal(JSON.stringify(line).includes("hermes-test-key"), false);
+});
+
 test("live mode posts once, ignores the bot's own user id, and keeps refunds for review", async () => {
   const inbox = createMemoryInbox();
   const sent = [];
@@ -225,30 +256,53 @@ test("off mode acknowledges a signed event and sends nothing", async () => {
   assert.equal((await inbox.reviews()).length, 0);
 });
 
-test("a failed live send releases the claim so a retry can post", async () => {
+test("the webhook returns 200 before the model finishes, and a retry does not post twice", async () => {
   const inbox = createMemoryInbox();
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const jobs = [];
+  const ctx = { waitUntil(promise) { jobs.push(promise); } };
   let calls = 0;
-  const fetchImpl = async () => {
-    calls += 1;
-    if (calls === 1) return { ok: false, status: 503, json: async () => ({ error: "nope" }) };
-    return { ok: true, json: async () => ({ data: { id: "1" } }) };
-  };
-  const credentials = {
+  let responded = false;
+  const responsePromise = handleX(postRequest(question), env({
     X_BOT_USERNAME: "clanksmith",
     X_OAUTH2_USER_TOKEN: "user-token-value",
-    X_API_SECRET: SECRET,
-  };
-  const first = await handleX(postRequest(question), env(credentials), {
+    HERMES_API_KEY: "hermes-test-key",
+  }), {
     inbox,
-    fetchImpl,
+    ctx,
+    llmFetch: async () => {
+      await gate;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ finish_reason: "stop", message: { content: "Hey. What do you want done? https://clanksmith.com" } }] }),
+      };
+    },
+    fetchImpl: async () => {
+      calls += 1;
+      return { ok: calls === 1 ? false : true, status: calls === 1 ? 503 : 200, json: async () => ({ data: { id: "1" } }) };
+    },
     now: () => Date.parse("2026-11-15T05:00:00.000Z"),
   });
-  assert.equal(first.status, 503);
-  const second = await handleX(postRequest(question), env(credentials), {
+  const response = await responsePromise;
+  assert.equal(response.status, 200);
+  assert.equal(calls, 0);
+  responded = true;
+  release();
+  await Promise.all(jobs);
+  assert.equal(responded, true);
+  assert.equal(calls, 2);
+  const again = await handleX(postRequest(question), env({
+    X_BOT_USERNAME: "clanksmith",
+    X_OAUTH2_USER_TOKEN: "user-token-value",
+  }), {
     inbox,
-    fetchImpl,
+    ctx,
+    fetchImpl: async () => { calls += 1; return { ok: true, json: async () => ({ data: { id: "2" } }) }; },
     now: () => Date.parse("2026-11-15T05:00:01.000Z"),
   });
-  assert.equal(second.status, 200);
+  await Promise.all(jobs);
+  assert.equal(again.status, 200);
   assert.equal(calls, 2);
 });
