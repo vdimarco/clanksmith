@@ -2,6 +2,7 @@
 // www and plain HTTP go to https://clanksmith.com.
 // /mcp is the relay. /x/webhook and /x/review are the X reply inbox.
 // Every other path is a static asset from ../site.
+import { collectJobs, jobsResponse } from "./x/boardjob.mjs";
 import { handleX } from "./x/handle.mjs";
 
 const SECURITY = {
@@ -41,6 +42,12 @@ function relayRequest(request) {
   return new Request(url, request);
 }
 
+async function boardInbox(env) {
+  if (!env?.X_INBOX) return null;
+  const { durableInbox } = await import("./x/object.mjs");
+  return durableInbox(env.X_INBOX);
+}
+
 export async function handleRequest(request, env, options = {}) {
   const url = new URL(request.url);
   if (!LOCAL.has(url.hostname)) {
@@ -52,6 +59,18 @@ export async function handleRequest(request, env, options = {}) {
   }
   if (isRelayPath(url.pathname)) return options.relay(relayRequest(request));
   if (url.pathname === "/x/webhook" || url.pathname === "/x/review") return handleX(request, env, options);
+  if (url.pathname === "/jobs" || url.pathname.startsWith("/jobs/")) {
+    const inbox = options.jobsInbox || await boardInbox(env);
+    const page = jobsResponse(url.pathname, await collectJobs(inbox));
+    if (page) {
+      const response = new Response(page.body, {
+        status: page.status,
+        headers: { "content-type": "text/html; charset=utf-8", "cache-control": page.cache },
+      });
+      for (const [name, value] of Object.entries(SECURITY)) response.headers.set(name, value);
+      return response;
+    }
+  }
   const asset = await env.ASSETS.fetch(request);
   const response = new Response(asset.body, asset);
   for (const [name, value] of Object.entries(SECURITY)) response.headers.set(name, value);

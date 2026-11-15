@@ -92,6 +92,7 @@ export function replyProblems(text, { authorHandle = "" } = {}) {
   if (/\b(?:the bot|this bot)\b/i.test(value)) problems.push("third-person");
   const endsClean = /[.?!]["')\]]*$/.test(value)
     || /https:\/\/clanksmith\.com\/?$/i.test(value)
+    || /https:\/\/clanksmith\.com\/jobs\/[A-Za-z0-9_-]+$/.test(value)
     || /https:\/\/market\.near\.ai\/jobs\/[A-Za-z0-9_-]+$/.test(value);
   if (!endsClean) problems.push("unfinished");
   const allowed = new Set(["clanksmith"]);
@@ -102,7 +103,8 @@ export function replyProblems(text, { authorHandle = "" } = {}) {
   const urls = value.match(/https?:\/\/[^\s)]+/g) || [];
   const cleaned = urls.map((url) => url.replace(/[.,;:!?]+$/g, ""));
   const marketJob = /^https:\/\/market\.near\.ai\/jobs\/[A-Za-z0-9_-]+$/;
-  const allowedUrl = cleaned.every((url) => url === "https://clanksmith.com" || url === "https://clanksmith.com/" || marketJob.test(url));
+  const boardJob = /^https:\/\/clanksmith\.com\/jobs\/[A-Za-z0-9_-]+$/;
+  const allowedUrl = cleaned.every((url) => url === "https://clanksmith.com" || url === "https://clanksmith.com/" || marketJob.test(url) || boardJob.test(url));
   if (!allowedUrl || cleaned.length > 1) problems.push("link");
   return problems;
 }

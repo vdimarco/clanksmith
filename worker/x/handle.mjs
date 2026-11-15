@@ -1,5 +1,6 @@
 // /x/webhook answers the CRC and accepts signed X deliveries.
 // /x/review lists messages a person should read. X_REPLY_MODE defaults to off.
+import { publishBoardJob } from "./boardjob.mjs";
 import { draftReply, pointsAtReference, readBrief } from "./brief.mjs";
 import { composeReply } from "./compose.mjs";
 import { normalizeWebhook } from "./events.mjs";
@@ -231,6 +232,25 @@ async function publishReplies(pending, { mode, env, deps, tokenProvider, inbox }
     }
     const brief = readBrief(hydrated);
     const shaped = useBrief(decision, brief);
+    let board = null;
+    if (shaped && brief.explicit) {
+      try {
+        board = await publishBoardJob(brief, inbox, Date.now());
+        const amounts = (board.job.amounts || []).map((row) => row.amount + " " + row.currency);
+        console.log(JSON.stringify({
+          event: "x.board",
+          id: board.job.id,
+          sourcePostId: board.job.sourcePostId,
+          payer: board.job.payerName,
+          payerKind: board.job.payerKind,
+          amounts,
+          url: board.job.url,
+          replayed: board.replayed === true,
+        }));
+      } catch {
+        board = null;
+      }
+    }
     let listing = null;
     const listings = listingMode(env);
     if (shaped && brief.explicit && listings !== "off") {
@@ -248,7 +268,7 @@ async function publishReplies(pending, { mode, env, deps, tokenProvider, inbox }
         listing = null;
       }
     }
-    const linked = listing?.url && (mode !== "live" || listing.sent) ? listing.url : "";
+    const linked = board?.job?.url || (listing?.url && (mode !== "live" || listing.sent) ? listing.url : "");
     let composed = { text: decision.text, source: "template" };
     if (pointsAtReference(hydrated.text) && !hydrated.parentText && !hydrated.quotedText) {
       composed = {

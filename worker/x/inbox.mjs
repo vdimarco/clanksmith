@@ -79,12 +79,41 @@ export async function storeListing(storage, record) {
   });
 }
 
+export async function readBoardJob(storage, sourcePostId) {
+  const row = await storage.get("boardjob:" + sourcePostId);
+  return row ? { ...row } : null;
+}
+
+export async function listBoardJobs(storage) {
+  const listed = await storage.list({ prefix: "boardjob:" });
+  return [...listed.values()].map((row) => ({ ...row }));
+}
+
+export async function storeBoardJob(storage, job) {
+  return transact(storage, async (tx) => {
+    const key = "boardjob:" + job.sourcePostId;
+    const existing = await tx.get(key);
+    if (existing?.id) return { job: { ...existing }, replayed: true };
+    const saved = { ...job };
+    await tx.put(key, saved);
+    return { job: saved, replayed: false };
+  });
+}
+
 function memoryStorage() {
   const map = new Map();
   const storage = {
     async get(key) { return map.has(key) ? map.get(key) : undefined; },
     async put(key, value) { map.set(key, value); },
     async delete(key) { map.delete(key); },
+    async list(options = {}) {
+      const prefix = options.prefix || "";
+      const out = new Map();
+      for (const [key, value] of map) {
+        if (String(key).startsWith(prefix)) out.set(key, value);
+      }
+      return out;
+    },
     async transaction(run) { return run(storage); },
   };
   return storage;
@@ -100,5 +129,8 @@ export function createMemoryInbox() {
     reviews: () => listReviews(storage),
     getListing: (sourcePostId) => readListing(storage, sourcePostId),
     saveListing: (record) => storeListing(storage, record),
+    getBoardJob: (sourcePostId) => readBoardJob(storage, sourcePostId),
+    listBoardJobs: () => listBoardJobs(storage),
+    saveBoardJob: (job) => storeBoardJob(storage, job),
   };
 }

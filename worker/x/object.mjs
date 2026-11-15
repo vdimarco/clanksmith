@@ -1,7 +1,7 @@
 // One inbox for @clanksmith. Storage claims are transactional, so a webhook retry
 // cannot pass the dedupe check twice.
 import { DurableObject } from "cloudflare:workers";
-import { addReview, claimReply, listReviews, readListing, releaseClaim, remember, storeListing } from "./inbox.mjs";
+import { addReview, claimReply, listBoardJobs, listReviews, readBoardJob, readListing, releaseClaim, remember, storeBoardJob, storeListing } from "./inbox.mjs";
 import { createTokenKeeper } from "./token.mjs";
 
 export class XInbox extends DurableObject {
@@ -24,6 +24,15 @@ export class XInbox extends DurableObject {
     }
     if (url.pathname === "/listing" && request.method === "POST") {
       return Response.json(await storeListing(this.ctx.storage, body));
+    }
+    if (url.pathname === "/board-jobs" && request.method === "GET") {
+      return Response.json({ jobs: await listBoardJobs(this.ctx.storage) });
+    }
+    if (url.pathname === "/board-job" && request.method === "GET") {
+      return Response.json({ job: await readBoardJob(this.ctx.storage, url.searchParams.get("source") || "") });
+    }
+    if (url.pathname === "/board-job" && request.method === "POST") {
+      return Response.json(await storeBoardJob(this.ctx.storage, body));
     }
     if (url.pathname === "/oauth/access") {
       const accessToken = await this.tokens().accessToken(body || {});
@@ -62,6 +71,9 @@ export function durableInbox(namespace) {
     reviews: () => call("/reviews"),
     getListing: (sourcePostId) => call("/listing?source=" + encodeURIComponent(sourcePostId)).then((body) => body.record || null),
     saveListing: (record) => call("/listing", record),
+    getBoardJob: (sourcePostId) => call("/board-job?source=" + encodeURIComponent(sourcePostId)).then((body) => body.job || null),
+    listBoardJobs: () => call("/board-jobs").then((body) => body.jobs || []),
+    saveBoardJob: (job) => call("/board-job", job),
     accessToken: (opts = {}) => call("/oauth/access", opts).then((body) => body.accessToken || null),
   };
 }

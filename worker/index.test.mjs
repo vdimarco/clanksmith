@@ -24,6 +24,15 @@ test("site Worker preserves redirects, cache rules, and board feed access", asyn
   assert.doesNotMatch(home.headers.get("content-security-policy"), /connect-src 'self' https:;/);
   assert.equal(home.headers.get("cache-control"), "public, max-age=300");
 
+  const jobs = await get("https://clanksmith.com/jobs");
+  assert.equal(jobs.status, 200);
+  assert.match(await jobs.text(), /Aktionariat/);
+  assert.match(jobs.headers.get("content-type"), /text\/html/);
+  const one = await get("https://clanksmith.com/jobs/x2121989097954697556");
+  assert.equal(one.status, 200);
+  assert.match(await one.text(), /3 ETH/);
+  assert.equal((await get("https://clanksmith.com/jobs/missing")).status, 404);
+
   const board = await get("https://clanksmith.com/board/");
   assert.match(board.headers.get("content-security-policy"), /connect-src 'self' https:;/);
   assert.equal((await get("https://clanksmith.com/board/board.css")).headers.get("cache-control"), "public, max-age=300");
