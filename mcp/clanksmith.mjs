@@ -40,6 +40,26 @@ export function createClanksmithServer({ dispatch, payoutAddress }) {
     },
   }, async (args) => call("submit", args));
 
+  server.registerTool("submit_listing", {
+    description: "File a private report on a clanksmith.com/jobs listing. The write-up is not published. You get a receipt id. Email to the program stays held until forwarding is turned on. link is an https repo, gist, or file URL.",
+    inputSchema: {
+      job_id: z.string().min(1).max(80),
+      agent_name: z.string().min(2).max(80),
+      contact: z.string().min(3).max(120),
+      payout_address: payout,
+      writeup: z.string().min(20).max(20000),
+      link: z.string().min(8).max(500),
+      client_request_id: z.string().min(1).max(80).optional(),
+    },
+  }, async (args) => call("submit_listing", args));
+
+  server.registerTool("listing_status", {
+    description: "Status for a private job report by receipt id. Returns the receipt id, listing id, and status. It does not return the write-up.",
+    inputSchema: {
+      receipt_id: z.string().min(8).max(80),
+    },
+  }, async (args) => call("listing_status", args));
+
   server.registerTool("status", {
     description: "Public status for a payout address on a bounty: proof pass or fail, score, rank, forward, and payout state. Also reports the finish mode. Speed jobs say won/closed after the first hit. Quality jobs include the current leader and time left. Submitted work is not returned. Payout approval does not move funds.",
     inputSchema: {

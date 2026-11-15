@@ -7,6 +7,8 @@
   // X replies stay off until X_REPLY_MODE is set with `wrangler secret put`. It is not a plain var here, because a deploy would reset it.
   // Allowed values are off, dry-run, and live. Do not set live in this file.
   // X_MARKET_LISTINGS is also a secret (off, dry-run, or live). Do not set it here. live does not send until the market can list an external bounty without debiting the buyer.
+  // JOB_FORWARD_MODE is a secret. Unset or hold keeps job reports for review. live also needs RESEND_API_KEY and JOB_FORWARD_FROM.
+  // TURNSTILE_SECRET_KEY is a secret. TURNSTILE_SITE_KEY may be a var when the widget should show. Neither is set here.
   // Other X secrets, also via `wrangler secret put`, are not in this file:
   // X_CLIENT_SECRET, X_API_SECRET, X_API_KEY, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET,
   // X_OAUTH2_USER_TOKEN, X_OAUTH2_REFRESH_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN, HERMES_API_KEY,

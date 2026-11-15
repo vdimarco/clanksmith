@@ -4,6 +4,7 @@
 // Every other path is a static asset from ../site.
 import { collectJobs, jobsResponse } from "./x/boardjob.mjs";
 import { handleX } from "./x/handle.mjs";
+import { handleJobSubmission } from "./x/submit-http.mjs";
 
 const SECURITY = {
   "strict-transport-security": "max-age=31536000; includeSubDomains",
@@ -61,7 +62,18 @@ export async function handleRequest(request, env, options = {}) {
   if (url.pathname === "/x/webhook" || url.pathname === "/x/review") return handleX(request, env, options);
   if (url.pathname === "/jobs" || url.pathname.startsWith("/jobs/")) {
     const inbox = options.jobsInbox || await boardInbox(env);
-    const page = jobsResponse(url.pathname, await collectJobs(inbox));
+    const submitted = await handleJobSubmission(request, env, inbox);
+    if (submitted) {
+      const headers = new Headers(submitted.headers);
+      for (const [name, value] of Object.entries(SECURITY)) headers.set(name, value);
+      if (env.TURNSTILE_SITE_KEY) {
+        headers.set("content-security-policy", SECURITY["content-security-policy"]
+          .replace("script-src 'self'", "script-src 'self' https://challenges.cloudflare.com")
+          .replace("frame-ancestors 'none'", "frame-src https://challenges.cloudflare.com; frame-ancestors 'none'"));
+      }
+      return new Response(submitted.body, { status: submitted.status, headers });
+    }
+    const page = jobsResponse(url.pathname, await collectJobs(inbox), { turnstileSiteKey: env.TURNSTILE_SITE_KEY || "" });
     if (page) {
       const response = new Response(page.body, {
         status: page.status,

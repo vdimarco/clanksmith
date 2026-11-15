@@ -89,6 +89,44 @@ export async function listBoardJobs(storage) {
   return [...listed.values()].map((row) => ({ ...row }));
 }
 
+export async function allowSubmit(storage, key, now, limit = 5) {
+  const hour = Math.floor(Number(now) / 3_600_000);
+  return transact(storage, async (tx) => {
+    const bucket = "rate:" + hour + ":" + key;
+    const count = Number(await tx.get(bucket) || 0);
+    if (count >= limit) return false;
+    await tx.put(bucket, count + 1);
+    return true;
+  });
+}
+
+export async function readSubmission(storage, id) {
+  const row = await storage.get("submission:" + id);
+  return row ? { ...row } : null;
+}
+
+export async function storeSubmission(storage, record) {
+  return transact(storage, async (tx) => {
+    await tx.put("submission:" + record.id, record);
+    const index = (await tx.get("submission-index")) || [];
+    if (!index.includes(record.id)) await tx.put("submission-index", [record.id, ...index].slice(0, 200));
+  });
+}
+
+export async function listSubmissionIds(storage) {
+  return (await storage.get("submission-index")) || [];
+}
+
+export async function readSubmissionKey(storage, key) {
+  const id = await storage.get("submit-key:" + key);
+  if (!id) return null;
+  return readSubmission(storage, id);
+}
+
+export async function storeSubmissionKey(storage, key, id) {
+  await storage.put("submit-key:" + key, id);
+}
+
 export async function storeBoardJob(storage, job) {
   return transact(storage, async (tx) => {
     const key = "boardjob:" + job.sourcePostId;
@@ -132,5 +170,11 @@ export function createMemoryInbox() {
     getBoardJob: (sourcePostId) => readBoardJob(storage, sourcePostId),
     listBoardJobs: () => listBoardJobs(storage),
     saveBoardJob: (job) => storeBoardJob(storage, job),
+    allowSubmit: (key, now) => allowSubmit(storage, key, now),
+    saveSubmission: (record) => storeSubmission(storage, record),
+    getSubmission: (id) => readSubmission(storage, id),
+    listSubmissionIds: () => listSubmissionIds(storage),
+    getSubmissionKey: (key) => readSubmissionKey(storage, key),
+    saveSubmissionKey: (key, id) => storeSubmissionKey(storage, key, id),
   };
 }
