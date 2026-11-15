@@ -1,7 +1,7 @@
 // One inbox for @clanksmith. Storage claims are transactional, so a webhook retry
 // cannot pass the dedupe check twice.
 import { DurableObject } from "cloudflare:workers";
-import { addReview, claimReply, listReviews, releaseClaim, remember } from "./inbox.mjs";
+import { addReview, claimReply, listReviews, readListing, releaseClaim, remember, storeListing } from "./inbox.mjs";
 import { createTokenKeeper } from "./token.mjs";
 
 export class XInbox extends DurableObject {
@@ -19,6 +19,12 @@ export class XInbox extends DurableObject {
       return Response.json({ ok: true });
     }
     if (url.pathname === "/reviews") return Response.json(await listReviews(this.ctx.storage));
+    if (url.pathname === "/listing" && request.method === "GET") {
+      return Response.json({ record: await readListing(this.ctx.storage, url.searchParams.get("source") || "") });
+    }
+    if (url.pathname === "/listing" && request.method === "POST") {
+      return Response.json(await storeListing(this.ctx.storage, body));
+    }
     if (url.pathname === "/oauth/access") {
       const accessToken = await this.tokens().accessToken(body || {});
       return Response.json({ accessToken });
@@ -54,6 +60,8 @@ export function durableInbox(namespace) {
     remember: (opts) => call("/remember", opts),
     review: (item) => call("/review", item),
     reviews: () => call("/reviews"),
+    getListing: (sourcePostId) => call("/listing?source=" + encodeURIComponent(sourcePostId)).then((body) => body.record || null),
+    saveListing: (record) => call("/listing", record),
     accessToken: (opts = {}) => call("/oauth/access", opts).then((body) => body.accessToken || null),
   };
 }

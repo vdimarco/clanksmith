@@ -48,12 +48,12 @@ test("genuine questions and hire attempts get one template reply", () => {
   assert.equal(hire.text, REPLIES.hire);
 });
 
-test("the account never replies to itself, retweets, quotes, spam, or hostility", () => {
+test("the account never replies to itself, retweets, spam, or hostility, and a quote is still a mention", () => {
   assert.deepEqual(decide(event("what is clanksmith?", { authorId: BOT_USER_ID })).action, "ignore");
   assert.equal(decide(event("what is clanksmith?", { authorId: BOT_USER_ID })).reason, "self");
   assert.equal(decide(event("", { kind: "chat", encrypted: true, authorId: BOT_USER_ID })).reason, "self");
   assert.equal(decide(event("what is clanksmith?", { isRetweet: true })).reason, "retweet");
-  assert.equal(decide(event("what is clanksmith?", { isQuote: true })).reason, "quote");
+  assert.equal(decide(event("what is clanksmith?", { isQuote: true })).reason, "what");
   assert.equal(decide(event("RT @someone what is clanksmith?")).reason, "retweet");
   assert.equal(decide(event("Huge giveaway, follow me for a referral airdrop")).reason, "spam");
   assert.equal(decide(event("fuck you, this bot is trash")).reason, "hostile");

@@ -1,12 +1,15 @@
 // /x/webhook answers the CRC and accepts signed X deliveries.
 // /x/review lists messages a person should read. X_REPLY_MODE defaults to off.
+import { draftReply, pointsAtReference, readBrief } from "./brief.mjs";
 import { composeReply } from "./compose.mjs";
 import { normalizeWebhook } from "./events.mjs";
 import { HOURLY_REPLY_LIMIT } from "./inbox.mjs";
+import { createListing, listingMode, marketFor } from "./listing.mjs";
 import { chatNotice, postNotify, replyNotice } from "./notify.mjs";
 import { BOT_USER_ID, decide } from "./policy.mjs";
 import { deliverReply } from "./send.mjs";
 import { crcResponseToken, sameSecret, verifyWebhookSignature } from "./sign.mjs";
+import { hydrateEvent, readToken } from "./source.mjs";
 
 const MAX_BODY = 262144;
 const SILENT = new Set(["self", "retweet", "empty", "spam"]);
@@ -21,7 +24,24 @@ function replyLog(mode, event, composed) {
   const line = { event: "x.reply", mode, id: event.id, source: composed.source, text: composed.text };
   if (composed.model) line.model = composed.model;
   if (Array.isArray(composed.fallback) && composed.fallback.length) line.fallback = composed.fallback;
+  if (composed.listing) line.listing = composed.listing;
   return line;
+}
+
+function listingLog(listing) {
+  return {
+    event: "x.listing",
+    sourcePostId: listing.sourcePostId,
+    jobId: listing.jobId || "",
+    url: listing.url || "",
+    payer: listing.payerName,
+    payerKind: listing.payerKind,
+    amounts: listing.amounts,
+    dryRun: listing.dryRun === true,
+    replayed: listing.replayed === true,
+    sent: listing.sent === true,
+    ...(listing.reason ? { reason: listing.reason } : {}),
+  };
 }
 
 function json(payload, status = 200) {
@@ -178,7 +198,7 @@ export async function handleX(request, env, deps = {}) {
   }
   const work = (async () => {
     for (const notice of notices) await postNotify(env, notice, { fetchImpl: deps.notifyFetch });
-    await publishReplies(pending, { mode, env, deps, tokenProvider });
+    await publishReplies(pending, { mode, env, deps, tokenProvider, inbox });
   })();
   if (deps.ctx && typeof deps.ctx.waitUntil === "function") {
     deps.ctx.waitUntil(work);
@@ -188,19 +208,68 @@ export async function handleX(request, env, deps = {}) {
   return json({ ok: true });
 }
 
-async function publishReplies(pending, { mode, env, deps, tokenProvider }) {
+function useBrief(decision, brief) {
+  if (decision.reason === "what" || decision.reason === "post" || decision.reason === "bid") return false;
+  return brief.via !== "mention" || brief.explicit || brief.ask === "budget" || brief.ask === "deadline";
+}
+
+async function publishReplies(pending, { mode, env, deps, tokenProvider, inbox }) {
+  let token = "";
+  let tokenRead = false;
   for (const { event, decision } of pending) {
-    let composed = { text: decision.text, source: "template" };
+    const needsText = (event.parentId && !event.parentText && pointsAtReference(event.text))
+      || (event.quotedId && !event.quotedText && (event.isQuote || pointsAtReference(event.text)));
+    if (needsText && !tokenRead) {
+      tokenRead = true;
+      token = await readToken(env, tokenProvider);
+    }
+    let hydrated = event;
     try {
-      composed = await composeReply({
-        event,
-        reason: decision.reason,
-        template: decision.text,
-        env,
-        fetchImpl: deps.llmFetch,
-      });
+      hydrated = needsText ? await hydrateEvent(event, { fetchImpl: deps.fetchImpl, token }) : event;
     } catch {
-      composed = { text: decision.text, source: "template" };
+      hydrated = event;
+    }
+    const brief = readBrief(hydrated);
+    const shaped = useBrief(decision, brief);
+    let listing = null;
+    const listings = listingMode(env);
+    if (shaped && brief.explicit && listings !== "off") {
+      try {
+        listing = await createListing({
+          brief,
+          mode: listings,
+          market: deps.market || marketFor(env, deps.fetchImpl),
+          inbox,
+          env,
+          now: Date.now(),
+        });
+        console.log(JSON.stringify(listingLog(listing)));
+      } catch {
+        listing = null;
+      }
+    }
+    const linked = listing?.url && (mode !== "live" || listing.sent) ? listing.url : "";
+    let composed = { text: decision.text, source: "template" };
+    if (pointsAtReference(hydrated.text) && !hydrated.parentText && !hydrated.quotedText) {
+      composed = {
+        text: "I couldn't read the post you pointed at. What should agents do, and what budget comes with it?",
+        source: "brief",
+      };
+    } else if (shaped && (brief.task || brief.ask)) {
+      composed = { text: draftReply(brief, { url: linked }), source: "brief" };
+      if (listing?.reason) composed.listing = listing.reason;
+    } else {
+      try {
+        composed = await composeReply({
+          event: hydrated,
+          reason: decision.reason,
+          template: decision.text,
+          env,
+          fetchImpl: deps.llmFetch,
+        });
+      } catch {
+        composed = { text: decision.text, source: "template" };
+      }
     }
     if (mode === "dry-run") {
       console.log(JSON.stringify(replyLog("dry-run", event, composed)));

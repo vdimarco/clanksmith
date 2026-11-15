@@ -378,3 +378,191 @@ test("the webhook returns 200 before the model finishes, and a retry does not po
   assert.equal(again.status, 200);
   assert.equal(calls, 2);
 });
+
+const BOUNTY = "Aktionariat's contract bounty pays 3 ETH for high-impact bugs (takeover or drain of a token, market or payment hub) and 1 ETH for medium. Email bugs@aktionariat.com with a Hardhat PoC against master. github.com/aktionariat/contracts";
+const WARM = "This one is already spelled out. Aktionariat pays 3 ETH for a high-impact bug and 1 ETH for a medium one. Email a Hardhat PoC against master to bugs@aktionariat.com.";
+
+function aktionariat(mentionId) {
+  return {
+    data: {
+      event_type: "post.mention.create",
+      filter: { user_id: "1065743939729309697" },
+      payload: {
+        id: mentionId,
+        author_id: "15320730",
+        text: "@W3B_AI_SR @clanksmith check out the above",
+        referenced_tweets: [{ type: "replied_to", id: "2121989097954697556" }],
+      },
+      includes: {
+        users: [
+          { id: "15320730", username: "proto_von" },
+          { id: "1934994668359413760", username: "W3B_AI_SR" },
+        ],
+        tweets: [{ id: "2121989097954697556", author_id: "1934994668359413760", text: BOUNTY }],
+      },
+    },
+  };
+}
+
+function logged(lines) {
+  return lines.map((entry) => { try { return JSON.parse(entry); } catch { return null; } }).filter(Boolean);
+}
+
+test("a pointer at the Aktionariat post uses its ETH budget and does not lecture", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  let llm = 0;
+  let posted = 0;
+  try {
+    const response = await handleX(postRequest(aktionariat("2122006059141263643")), env({
+      X_REPLY_MODE: "dry-run",
+      X_BOT_USERNAME: "clanksmith",
+      HERMES_API_KEY: "hermes-test-key",
+    }), {
+      inbox,
+      llmFetch: async () => { llm += 1; throw new Error("model"); },
+      fetchImpl: async () => { posted += 1; throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T16:40:00.000Z"),
+    });
+    assert.equal(response.status, 200);
+  } finally {
+    console.log = original;
+  }
+  assert.equal(llm, 0);
+  assert.equal(posted, 0);
+  const reply = logged(logs).find((entry) => entry.event === "x.reply");
+  assert.equal(reply.text, WARM);
+  assert.equal(reply.source, "brief");
+  assert.equal(reply.text.includes("\u2014"), false);
+  assert.equal(/still just a request|what budget|what deadline/i.test(reply.text), false);
+});
+
+test("a pointer with no included parent is read from X before the reply", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  const token = "bearer-read-token";
+  const payload = {
+    data: {
+      event_type: "post.mention.create",
+      filter: { user_id: "1065743939729309697" },
+      payload: {
+        id: "2122006059141263700",
+        author_id: "15320730",
+        text: "@W3B_AI_SR @clanksmith check out the above",
+        referenced_tweets: [{ type: "replied_to", id: "2121989097954697556" }],
+      },
+      includes: { users: [{ id: "15320730", username: "proto_von" }] },
+    },
+  };
+  let saw = "";
+  try {
+    await handleX(postRequest(payload), env({
+      X_REPLY_MODE: "dry-run",
+      X_BEARER_TOKEN: token,
+      X_BOT_USERNAME: "clanksmith",
+    }), {
+      inbox,
+      fetchImpl: async (url, opts) => {
+        saw = url;
+        assert.equal(opts.headers.authorization, "Bearer " + token);
+        return {
+          ok: true,
+          json: async () => ({
+            data: { id: "2121989097954697556", text: BOUNTY, author_id: "1934994668359413760" },
+            includes: { users: [{ id: "1934994668359413760", username: "W3B_AI_SR" }] },
+          }),
+        };
+      },
+      now: () => Date.parse("2026-11-15T16:43:00.000Z"),
+    });
+  } finally {
+    console.log = original;
+  }
+  assert.match(saw, /2121989097954697556/);
+  const reply = logged(logs).find((entry) => entry.event === "x.reply");
+  assert.equal(reply.text, WARM);
+  assert.equal(JSON.stringify(logs).includes(token), false);
+});
+
+test("dry-run listings record one market job for the source post and link it", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  try {
+    await handleX(postRequest(aktionariat("2122006059141263643")), env({
+      X_REPLY_MODE: "dry-run",
+      X_MARKET_LISTINGS: "dry-run",
+      X_BOT_USERNAME: "clanksmith",
+    }), {
+      inbox,
+      fetchImpl: async () => { throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T16:40:00.000Z"),
+    });
+    await handleX(postRequest(aktionariat("2122006059141263644")), env({
+      X_REPLY_MODE: "dry-run",
+      X_MARKET_LISTINGS: "dry-run",
+      X_BOT_USERNAME: "clanksmith",
+    }), {
+      inbox,
+      fetchImpl: async () => { throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T16:41:00.000Z"),
+    });
+  } finally {
+    console.log = original;
+  }
+  const rows = logged(logs);
+  const listings = rows.filter((entry) => entry.event === "x.listing");
+  const replies = rows.filter((entry) => entry.event === "x.reply");
+  assert.equal(listings.length, 2);
+  assert.equal(listings[0].replayed, false);
+  assert.equal(listings[1].replayed, true);
+  assert.equal(listings[0].sourcePostId, "2121989097954697556");
+  assert.equal(listings[0].payer, "Aktionariat");
+  assert.equal(listings[0].payerKind, "third-party");
+  assert.deepEqual(listings[0].amounts, ["3 ETH", "1 ETH"]);
+  assert.equal(listings[0].dryRun, true);
+  assert.equal(listings[0].sent, false);
+  assert.equal(listings[0].jobId, "dry-run-2121989097954697556");
+  const url = "https://market.near.ai/jobs/dry-run-2121989097954697556";
+  assert.equal(replies[0].text, WARM + " Agents can bid here: " + url);
+  assert.equal(replies[1].text, replies[0].text);
+  assert.equal(replies[0].text.length <= 280, true);
+  assert.equal(JSON.stringify(rows).includes("proto_von"), false);
+});
+
+test("live listing mode does not escrow a third-party ETH bounty", async () => {
+  const inbox = createMemoryInbox();
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  let posted = 0;
+  try {
+    await handleX(postRequest(aktionariat("2122006059141263999")), env({
+      X_REPLY_MODE: "dry-run",
+      X_MARKET_LISTINGS: "live",
+      AGENT_MARKET_BUYER_KEY: "buyer-secret",
+      X_BOT_USERNAME: "clanksmith",
+    }), {
+      inbox,
+      fetchImpl: async () => { posted += 1; throw new Error("sent"); },
+      now: () => Date.parse("2026-11-15T16:42:00.000Z"),
+    });
+  } finally {
+    console.log = original;
+  }
+  assert.equal(posted, 0);
+  const rows = logged(logs);
+  const listing = rows.find((entry) => entry.event === "x.listing");
+  const reply = rows.find((entry) => entry.event === "x.reply");
+  assert.equal(listing.reason, "external-bounty-not-escrowed");
+  assert.equal(listing.sent, false);
+  assert.equal(listing.url, "");
+  assert.equal(reply.text, WARM);
+  assert.equal(reply.text.includes("market.near.ai"), false);
+  assert.equal(JSON.stringify(rows).includes("buyer-secret"), false);
+});

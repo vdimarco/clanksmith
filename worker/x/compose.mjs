@@ -39,13 +39,18 @@ const SYSTEM = [
   "People use this account to hire an AI agent from a post on X.",
   "They include the job, a budget, and a deadline. Agents bid.",
   "The buyer checks the work before anyone is paid.",
-  "It is in beta, so a post is a request until it is listed on NEAR AI Agent Market.",
-  "If the post describes a task, name that task. Ask for the budget or the deadline they left out. Say that agents bid.",
+  "It is in beta. Agents bid once a job is on NEAR AI Agent Market.",
+  "A parent post, a quoted post, and a pointer such as check out the above are the request. Read them.",
+  "If that post states a budget, a scope, a deliverable, or how to submit, use those facts.",
+  "Ask only for a detail that post does not already state. Ask one thing.",
+  "You may repeat a budget the post already states, including ETH.",
+  "Do not say a post is still just a request, and do not say it is not a job until it is listed.",
+  "If the post describes a task, name that task. Say that agents bid.",
   "Do not say you will do the work, and do not say an agent will do it.",
   "Include https://clanksmith.com at most once. No other links.",
   "Do not mention any account except the author.",
-  "Do not use an em dash or an en dash. Use a comma or a period.",
-  "No hashtags. Do not name a dollar amount or a fee.",
+  "Do not use an em dash or an en dash. Use a comma, a period, or a hyphen.",
+  "No hashtags. Do not invent a price or a fee. Repeating their budget is fine.",
   "You may repeat a count from their post, such as how many files.",
   "No promises or guarantees. Do not say you accept the job.",
   "No wallets, keys, or crypto pitches.",
@@ -75,6 +80,7 @@ export function replyProblems(text, { authorHandle = "" } = {}) {
   if (value.includes("\u2014") || value.includes("\u2013")) problems.push("dash");
   if (/(^|\s)#[A-Za-z0-9_]+/.test(value)) problems.push("hashtag");
   if (/\$\s?\d|\b\d+(?:\.\d+)?\s*(?:usd|usdc|dollars?|bucks)\b/i.test(value)) problems.push("price");
+  if (/\bstill just a request\b|\buntil it(?:'s| is) listed\b/i.test(value)) problems.push("lecture");
   if (/\b(?:guarantee|guaranteed|promise|promises|promised)\b/i.test(value)) problems.push("promise");
   if (/\b(?:i accept|we accept|i'?ll do|i will do|we'?ll do|we will do|i'?ll (?:build|take)|i will build|consider it done|i'?m on it|i am on it|(?:an )?agent will (?:do|build|make|finish|complete|take))\b/i.test(value)) problems.push("accept");
   if (/\b(?:wallet|private key|seed phrase|secret key|mnemonic|api key)\b/i.test(value)) problems.push("secrets");
@@ -84,7 +90,10 @@ export function replyProblems(text, { authorHandle = "" } = {}) {
   const withoutUrls = value.replace(/https?:\/\/\S+/gi, " ");
   if (/(^|[^@])\bclanksmith\b/i.test(withoutUrls)) problems.push("third-person");
   if (/\b(?:the bot|this bot)\b/i.test(value)) problems.push("third-person");
-  if (!/[.?!]["')\]]*$/.test(value) && !/https:\/\/clanksmith\.com\/?$/i.test(value)) problems.push("unfinished");
+  const endsClean = /[.?!]["')\]]*$/.test(value)
+    || /https:\/\/clanksmith\.com\/?$/i.test(value)
+    || /https:\/\/market\.near\.ai\/jobs\/[A-Za-z0-9_-]+$/.test(value);
+  if (!endsClean) problems.push("unfinished");
   const allowed = new Set(["clanksmith"]);
   const author = String(authorHandle || "").replace(/^@/, "").toLowerCase();
   if (author) allowed.add(author);
@@ -92,7 +101,8 @@ export function replyProblems(text, { authorHandle = "" } = {}) {
   if (mentions.some((mention) => !allowed.has(mention.slice(1).toLowerCase()))) problems.push("mention");
   const urls = value.match(/https?:\/\/[^\s)]+/g) || [];
   const cleaned = urls.map((url) => url.replace(/[.,;:!?]+$/g, ""));
-  const allowedUrl = cleaned.every((url) => url === "https://clanksmith.com" || url === "https://clanksmith.com/");
+  const marketJob = /^https:\/\/market\.near\.ai\/jobs\/[A-Za-z0-9_-]+$/;
+  const allowedUrl = cleaned.every((url) => url === "https://clanksmith.com" || url === "https://clanksmith.com/" || marketJob.test(url));
   if (!allowedUrl || cleaned.length > 1) problems.push("link");
   return problems;
 }
@@ -117,6 +127,8 @@ function userMessage(event, reason, repair) {
   ];
   const parent = clip(event.parentText);
   if (parent) lines.push("Parent: " + parent);
+  const quoted = clip(event.quotedText);
+  if (quoted) lines.push("Quoted: " + quoted);
   if (isGreeting(event.text)) {
     lines.push("This post is only a greeting. Reply in the first person. Do not start with @clanksmith. Do not describe Clanksmith in the third person. Greet them and ask what they want done. End with . or ? or ! or the site URL.");
   }
