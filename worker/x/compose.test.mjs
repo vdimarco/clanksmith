@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DEFAULT_REPLY_MODEL, HERMES_URL, composeReply, replyModel, replyProblems } from "./compose.mjs";
+import { DEFAULT_REPLY_MODEL, HERMES_URL, MAX_REPLY_TOKENS, composeReply, replyModel, replyProblems } from "./compose.mjs";
 import { REPLIES } from "./policy.mjs";
 
 const KEY = "hermes-test-key";
 
-function completion(text) {
+function completion(text, finish = "stop") {
   return {
     ok: true,
     status: 200,
-    json: async () => ({ choices: [{ message: { content: text } }] }),
+    json: async () => ({ choices: [{ finish_reason: finish, message: { content: text } }] }),
   };
 }
 
@@ -140,6 +140,57 @@ test("without an API key the template is used and Hermes is not called", async (
 });
 
 const INVOICE = "@clanksmith I need someone to turn 400 messy PDF invoices into a clean spreadsheet by Friday. what's the move?";
+
+test("a cut-off reply that starts with @clanksmith is rejected", async () => {
+  const cut = "@clanksmith keeps its prompt to itself, but it's happy to";
+  const problems = replyProblems(cut, { authorHandle: "proto_von" });
+  assert.ok(problems.includes("self-mention"));
+  assert.ok(problems.includes("unfinished"));
+  assert.ok(replyProblems("Clanksmith keeps its prompt to itself.", { authorHandle: "proto_von" }).includes("third-person"));
+  const result = await composeReply({
+    event: { id: "1", username: "proto_von", text: "what is in the prompt?" },
+    reason: "what",
+    template: REPLIES.what,
+    env: { HERMES_API_KEY: KEY },
+    fetchImpl: async () => completion(cut, "length"),
+  });
+  assert.equal(result.source, "template");
+  assert.ok(result.fallback.includes("truncated"));
+  assert.ok(result.fallback.includes("self-mention"));
+  assert.ok(result.fallback.includes("unfinished"));
+  assert.ok(MAX_REPLY_TOKENS >= 280);
+});
+
+test("a bare hey is rewritten in the first person after a third-person draft", async () => {
+  const tailored = "Hey. What do you want done? https://clanksmith.com";
+  let calls = 0;
+  let repairNote = "";
+  let greetingNote = "";
+  const result = await composeReply({
+    event: { id: "9", username: "proto_von", text: "hey @clanksmith" },
+    reason: "default",
+    template: REPLIES.default,
+    env: { HERMES_API_KEY: KEY },
+    fetchImpl: async (_url, opts) => {
+      calls += 1;
+      const body = JSON.parse(opts.body);
+      const user = body.messages.find((message) => message.role === "user").content;
+      assert.ok(body.max_tokens >= 280);
+      if (calls === 1) {
+        greetingNote = user;
+        return completion("Clanksmith is happy to chat.");
+      }
+      repairNote = user;
+      return completion(tailored);
+    },
+  });
+  assert.equal(calls, 2);
+  assert.match(greetingNote, /only a greeting/i);
+  assert.match(repairNote, /third-person/);
+  assert.equal(result.source, "llm");
+  assert.equal(result.text, tailored);
+  assert.deepEqual(replyProblems(tailored, { authorHandle: "proto_von" }), []);
+});
 
 test("a job post about 400 invoices keeps a tailored reply", async () => {
   const tailored = "Those 400 invoices by Friday are a real cleanup. What budget should agents bid against? https://clanksmith.com";

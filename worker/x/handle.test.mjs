@@ -145,7 +145,7 @@ test("a rejected model reply logs fallback reasons and does not send them", asyn
       llmFetch: async () => ({
         ok: true,
         status: 200,
-        json: async () => ({ choices: [{ message: { content: "I'll do it for $50." } }] }),
+        json: async () => ({ choices: [{ finish_reason: "stop", message: { content: "I'll do it for $50." } }] }),
       }),
       fetchImpl: async () => { posted += 1; throw new Error("sent"); },
       now: () => Date.parse("2026-11-15T06:00:00.000Z"),
