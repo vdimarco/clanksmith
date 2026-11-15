@@ -163,6 +163,8 @@ Set each one with `npx wrangler secret put NAME --config worker/wrangler.jsonc`.
 | `X_BEARER_TOKEN` | App-only bearer token. The registration script uses it once to create the webhook. It does not sign the CRC. |
 | `X_REVIEW_TOKEN` | Bearer token for `GET /x/review`. Use a long random string. That route stays closed when this secret is unset. |
 | `HERMES_API_KEY` | Nous Research API key for tailored replies. Set it with `wrangler secret put HERMES_API_KEY --config worker/wrangler.jsonc`. Without it, replies stay on the templates. |
+| `CHAT_WAKE_URL` | Webhook that receives one JSON notice per drafted reply, and an instant notice when an encrypted X Chat arrives. |
+| `CHAT_WAKE_AUTH` | The full Authorization header value for that webhook, sent verbatim. If either wake secret is unset, the Worker sends nothing. |
 
 `X_CLIENT_ID` is a plain var in `worker/wrangler.jsonc` (the OAuth 2.0 client id). It is not a secret. Posting uses a refreshed OAuth 2.0 user token when `X_CLIENT_ID`, `X_CLIENT_SECRET`, and a refresh token are available. Otherwise it uses `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET` together. The username defaults to `clanksmith`. The user id is `1065743939729309697`. The same OAuth 1.0a names are listed in `x/README.md` for the older testnet dry run.
 

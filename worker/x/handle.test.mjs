@@ -256,6 +256,78 @@ test("off mode acknowledges a signed event and sends nothing", async () => {
   assert.equal((await inbox.reviews()).length, 0);
 });
 
+test("a drafted reply and an encrypted chat each wake the chat once", async () => {
+  const inbox = createMemoryInbox();
+  const notices = [];
+  const logs = [];
+  const original = console.log;
+  console.log = (...parts) => logs.push(parts.join(" "));
+  const wake = {
+    X_REPLY_MODE: "dry-run",
+    CHAT_WAKE_URL: "https://wake.example/hook",
+    CHAT_WAKE_AUTH: "Bearer wake-secret-value",
+  };
+  const notifyFetch = async (_url, opts) => {
+    notices.push(JSON.parse(opts.body));
+    return { status: 202 };
+  };
+  const mention = {
+    data: {
+      event_type: "post.mention.create",
+      filter: { user_id: "1065743939729309697" },
+      payload: { id: "9001", author_id: "42", text: "hey @clanksmith" },
+      includes: { users: [{ id: "42", username: "proto_von" }] },
+    },
+  };
+  try {
+    await handleX(postRequest(mention), env(wake), { inbox, notifyFetch });
+    await handleX(postRequest(mention), env(wake), { inbox, notifyFetch });
+    await handleX(postRequest({
+      data: {
+        event_type: "chat.received",
+        filter: { user_id: "1065743939729309697" },
+        payload: { id: "chat-9", sender_id: "8", conversation_id: "8:1065743939729309697", encoded_event: "ciphertext" },
+      },
+    }), env(wake), { inbox, notifyFetch });
+    await handleX(postRequest({
+      data: {
+        event_type: "post.mention.create",
+        filter: { user_id: "1065743939729309697" },
+        payload: { id: "9002", author_id: "9", text: "Huge giveaway, follow me for a referral airdrop" },
+      },
+    }), env(wake), { inbox, notifyFetch });
+    await handleX(postRequest({
+      data: {
+        event_type: "post.mention.create",
+        filter: { user_id: "1065743939729309697" },
+        payload: { id: "9003", author_id: "1065743939729309697", text: "hello" },
+      },
+    }), env(wake), { inbox, notifyFetch });
+  } finally {
+    console.log = original;
+  }
+  assert.equal(notices.length, 2);
+  assert.equal(notices[0].type, "reply");
+  assert.equal(notices[0].kind, "post");
+  assert.equal(notices[0].id, "9001");
+  assert.equal(notices[0].author, "@proto_von");
+  assert.equal(notices[0].author_id, "42");
+  assert.equal(notices[0].their_text, "hey @clanksmith");
+  assert.equal(notices[0].reply_text, REPLIES.default);
+  assert.equal(notices[0].source, "template");
+  assert.equal(notices[0].outcome, "dry-run");
+  assert.equal(notices[0].reason, "default");
+  assert.equal(notices[1].type, "chat");
+  assert.equal(notices[1].event_id, "chat-9");
+  assert.equal(notices[1].sender_id, "8");
+  assert.equal(notices[1].conversation_id, "8:1065743939729309697");
+  assert.ok((await inbox.reviews()).some((item) => item.id === "chat-9" && item.reason === "encrypted"));
+  const logged = logs.join("\n");
+  assert.equal(logged.includes("wake-secret-value"), false);
+  assert.equal(logged.includes("https://wake.example/hook"), false);
+  assert.equal(logged.includes("ciphertext"), false);
+});
+
 test("the webhook returns 200 before the model finishes, and a retry does not post twice", async () => {
   const inbox = createMemoryInbox();
   let release;
