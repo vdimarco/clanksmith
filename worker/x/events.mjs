@@ -73,6 +73,7 @@ function fromActivity(data) {
       encrypted: true,
       eventType: type,
       participantId: payload.sender_id ? String(payload.sender_id) : null,
+      conversationId: payload.conversation_id ? String(payload.conversation_id) : "",
     }];
   }
   if (type.startsWith("dm.") || Array.isArray(payload.direct_message_events)) {

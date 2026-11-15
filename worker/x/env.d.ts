@@ -1,6 +1,8 @@
 // Bindings for the X reply path. Secrets are set with `wrangler secret put` and are not in wrangler.jsonc.
 export interface XReplyEnv {
   HERMES_API_KEY?: string;
+  CHAT_WAKE_URL?: string;
+  CHAT_WAKE_AUTH?: string;
   REPLY_MODEL?: string;
   X_REPLY_MODE?: string;
   X_CLIENT_ID?: string;

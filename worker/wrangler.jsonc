@@ -8,7 +8,8 @@
   // Allowed values are off, dry-run, and live. Do not set live in this file.
   // Other X secrets, also via `wrangler secret put`, are not in this file:
   // X_CLIENT_SECRET, X_API_SECRET, X_API_KEY, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET,
-  // X_OAUTH2_USER_TOKEN, X_OAUTH2_REFRESH_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN, HERMES_API_KEY.
+  // X_OAUTH2_USER_TOKEN, X_OAUTH2_REFRESH_TOKEN, X_BEARER_TOKEN, X_REVIEW_TOKEN, HERMES_API_KEY,
+  // CHAT_WAKE_URL, CHAT_WAKE_AUTH.
   // X_CLIENT_ID is the public OAuth 2.0 client id. The cron wakes the token refresh.
   // REPLY_MODEL is the chat model on the Nous endpoint. It is not a secret. Haiku is the automatic backup.
   "name": "clanksmith",
