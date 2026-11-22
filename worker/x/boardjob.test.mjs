@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readBrief } from "./brief.mjs";
 import { createMemoryInbox } from "./inbox.mjs";
+import { handleRequest } from "../site.mjs";
 import { AKTIONARIAT_POST, boardJobUrl, collectJobs, publishBoardJob, renderIndex, renderJob, seedJobs } from "./boardjob.mjs";
 
 test("the seeded Aktionariat listing names the program, the payout, and the source post", () => {
@@ -18,6 +19,64 @@ test("the seeded Aktionariat listing names the program, the payout, and the sour
   assert.match(job.paymentNote, /not from Clanksmith/i);
   assert.equal(job.paymentNote.includes("proto_von"), false);
   assert.equal(AKTIONARIAT_POST.includes("3 ETH"), true);
+});
+
+test("the seeded Paraloom listing names the pool, the four tiers, and the program", async () => {
+  const job = seedJobs().find((row) => row.id === "x2124329425684791409");
+  assert.ok(job);
+  assert.equal(job.id, "x2124329425684791409");
+  assert.equal(job.url, "https://clanksmith.com/jobs/x2124329425684791409");
+  assert.equal(job.sourcePostId, "2124329425684791409");
+  assert.equal(job.sourceUrl, "https://x.com/W3B_AI_SR/status/2124329425684791409");
+  assert.equal(job.title, "Paraloom Stage 1 bug bounty");
+  assert.equal(job.payerName, "Paraloom");
+  assert.equal(job.payerKind, "third-party");
+  assert.equal(job.payLine, "3000 USDC pool");
+  assert.deepEqual(job.amounts, [
+    { amount: "3000", currency: "USDC", tier: "pool" },
+    { amount: "1000", currency: "USDC", tier: "critical" },
+    { amount: "400", currency: "USDC", tier: "high" },
+    { amount: "150", currency: "USDC", tier: "medium" },
+    { amount: "50", currency: "USDC", tier: "low" },
+  ]);
+  assert.deepEqual(job.amountLines, [
+    "3000 USDC pool",
+    "up to 1000 USDC for a critical bug",
+    "up to 400 USDC for a high bug",
+    "up to 150 USDC for a medium bug",
+    "up to 50 USDC for a low bug",
+  ]);
+  assert.equal(job.email, "security@paraloom.network");
+  assert.equal(job.repo, "https://github.com/paraloom-labs/paraloom-core");
+  assert.match(job.submit, /security@paraloom\.network/);
+  assert.match(job.submit, /Do not open a public issue/);
+  assert.match(job.scope, /shielded-pool settlement stack/);
+  assert.match(job.scope, /compute layer is out of scope/);
+  assert.match(job.paymentNote, /Payment comes from Paraloom, the program named in the source post/);
+  assert.match(job.paymentNote, /not from Clanksmith/i);
+  assert.equal(job.task.includes("paraloom-labs/paraloom-core"), true);
+  const copy = [job.title, job.task, job.payLine, job.submit, job.scope, job.paymentNote, ...job.amountLines].join("\n");
+  assert.equal(copy.includes("\u2014"), false);
+  assert.equal(copy.includes("\u2013"), false);
+  assert.equal(seedJobs().filter((row) => row.sourcePostId === "2124329425684791409").length, 1);
+
+  const response = await handleRequest(new Request("https://clanksmith.com/jobs/x2124329425684791409"), {});
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Paraloom Stage 1 bug bounty/);
+  assert.match(html, /<strong>Paraloom<\/strong>/);
+  assert.match(html, /3000 USDC pool/);
+  assert.match(html, /up to 1000 USDC for a critical bug/);
+  assert.match(html, /up to 400 USDC for a high bug/);
+  assert.match(html, /up to 150 USDC for a medium bug/);
+  assert.match(html, /up to 50 USDC for a low bug/);
+  assert.match(html, /security@paraloom\.network/);
+  assert.match(html, /https:\/\/github\.com\/paraloom-labs\/paraloom-core/);
+  assert.match(html, /https:\/\/x\.com\/W3B_AI_SR\/status\/2124329425684791409/);
+  assert.match(html, /not from Clanksmith/i);
+  assert.equal(html.includes("\u2014"), false);
+  assert.equal(html.includes("\u2013"), false);
+  assert.equal(html.includes(">000<"), false);
 });
 
 test("the job page and the index show the payout and do not move money", () => {
