@@ -6,6 +6,7 @@ import { readBrief } from "./brief.mjs";
 export const AKTIONARIAT_POST = "Aktionariat's contract bounty pays 3 ETH for high-impact bugs (takeover or drain of a token, market or payment hub) and 1 ETH for medium. Email bugs@aktionariat.com with a Hardhat PoC against master. github.com/aktionariat/contracts";
 
 const SEEDED_AT = "2026-11-15T15:30:00.000Z";
+const PARALOOM_SEEDED_AT = "2026-11-22T02:29:37.872Z";
 
 export function boardJobId(sourcePostId) {
   const digits = String(sourcePostId || "").replace(/\D/g, "").slice(0, 20);
@@ -39,6 +40,13 @@ function submitLine(brief) {
   return "Follow the instructions in the source post.";
 }
 
+function paymentNote(payer, kind) {
+  if (kind === "third-party") {
+    return "Payment comes from " + payer + ", the program named in the source post. Not from the person who tagged @clanksmith, and not from Clanksmith. This page does not hold or send money.";
+  }
+  return "Payment comes from " + payer + ", who posted the job. Not from Clanksmith. This page does not hold or send money.";
+}
+
 function amountLines(brief) {
   return (brief.amounts || []).map((row) => {
     if (row.tier === "high") return row.amount + " " + row.currency + " for a high-impact bug";
@@ -56,9 +64,6 @@ export function boardJobFromBrief(brief, now = SEEDED_AT) {
   const title = brief.program || brief.task === "contract bounty"
     ? payer + " contract bounty"
     : (brief.task ? brief.task.charAt(0).toUpperCase() + brief.task.slice(1) : payer + " job");
-  const paymentNote = brief.payerKind === "third-party"
-    ? "Payment comes from " + payer + ", the program named in the source post. Not from the person who tagged @clanksmith, and not from Clanksmith. This page does not hold or send money."
-    : "Payment comes from " + payer + ", who posted the job. Not from Clanksmith. This page does not hold or send money.";
   return {
     id,
     url: boardJobUrl(id),
@@ -77,8 +82,43 @@ export function boardJobFromBrief(brief, now = SEEDED_AT) {
     scope: /takeover or drain/i.test(brief.text || "")
       ? "The program describes a high-impact bug as a takeover or drain of a token, market, or payment hub."
       : "",
-    paymentNote,
+    paymentNote: paymentNote(payer, brief.payerKind),
     createdAt: typeof now === "number" ? new Date(now).toISOString() : String(now),
+  };
+}
+
+// Written out field by field. The post parser turns "$3,000" into "000" and drops the tiers.
+function paraloomStage1Job() {
+  return {
+    id: "x2124329425684791409",
+    url: "https://clanksmith.com/jobs/x2124329425684791409",
+    sourcePostId: "2124329425684791409",
+    sourceUrl: "https://x.com/W3B_AI_SR/status/2124329425684791409",
+    title: "Paraloom Stage 1 bug bounty",
+    task: "Find a bug in paraloom-labs/paraloom-core (Solana program, Groth16 circuits, settlement, bridge) with a devnet proof of concept.",
+    payerName: "Paraloom",
+    payerKind: "third-party",
+    amounts: [
+      { amount: "3000", currency: "USDC", tier: "pool" },
+      { amount: "1000", currency: "USDC", tier: "critical" },
+      { amount: "400", currency: "USDC", tier: "high" },
+      { amount: "150", currency: "USDC", tier: "medium" },
+      { amount: "50", currency: "USDC", tier: "low" },
+    ],
+    amountLines: [
+      "3000 USDC pool",
+      "up to 1000 USDC for a critical bug",
+      "up to 400 USDC for a high bug",
+      "up to 150 USDC for a medium bug",
+      "up to 50 USDC for a low bug",
+    ],
+    payLine: "3000 USDC pool",
+    submit: "For Critical and High findings, email a proof of concept or reproduction steps to security@paraloom.network. Do not open a public issue. Medium and Low findings can be a public GitHub issue on paraloom-labs/paraloom-core, or the same email.",
+    email: "security@paraloom.network",
+    repo: "https://github.com/paraloom-labs/paraloom-core",
+    scope: "Stage 1 covers the shielded-pool settlement stack on the current Solana devnet: the on-chain program, privacy circuits, consensus, the Solana bridge, and client proof generation. The compute layer is out of scope. See docs/bug-bounty.md.",
+    paymentNote: paymentNote("Paraloom", "third-party"),
+    createdAt: PARALOOM_SEEDED_AT,
   };
 }
 
@@ -88,7 +128,7 @@ export function seedJobs() {
     username: "W3B_AI_SR",
     text: AKTIONARIAT_POST,
   });
-  return [boardJobFromBrief(brief, SEEDED_AT)];
+  return [boardJobFromBrief(brief, SEEDED_AT), paraloomStage1Job()];
 }
 
 export async function collectJobs(inbox) {
