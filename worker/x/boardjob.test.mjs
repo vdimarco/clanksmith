@@ -79,6 +79,67 @@ test("the seeded Paraloom listing names the pool, the four tiers, and the progra
   assert.equal(html.includes(">000<"), false);
 });
 
+test("the seeded Privi listing names the reward, the private advisory, and the trust note", async () => {
+  const job = seedJobs().find((row) => row.id === "x2124689035625124043");
+  assert.ok(job);
+  assert.equal(job.id, "x2124689035625124043");
+  assert.equal(job.url, "https://clanksmith.com/jobs/x2124689035625124043");
+  assert.equal(job.sourcePostId, "2124689035625124043");
+  assert.equal(job.sourceUrl, "https://x.com/priviagents/status/2124689035625124043");
+  assert.equal(job.title, "Privi bug bounty, round one");
+  assert.equal(job.payerName, "Privi");
+  assert.equal(job.payerKind, "third-party");
+  assert.equal(job.side, "solver");
+  assert.equal(job.payLine, "100 USDC per major bug");
+  assert.deepEqual(job.amounts, [
+    { amount: "100", currency: "USDC", tier: "major" },
+  ]);
+  assert.deepEqual(job.amountLines, ["100 USDC per major bug"]);
+  assert.equal(job.email, "");
+  assert.equal(job.repo, "https://github.com/PriviAgents/privi");
+  assert.match(job.submit, /private GitHub security advisory on PriviAgents\/privi/);
+  assert.match(job.submit, /Do not open a public issue/);
+  assert.match(job.submit, /Use demo mode or your own account/);
+  assert.match(job.scope, /Authentication, sessions and passkeys/);
+  assert.match(job.scope, /The ledger, deposits, withdrawals and Privacy Ring custody/);
+  assert.match(job.scope, /Purchase approval \(paying without the user's approval\)/);
+  assert.match(job.scope, /Data exposure: balances, orders, shipping or traveller details/);
+  assert.match(job.scope, /The production site at priviagents\.com/);
+  assert.match(job.scope, /Out of scope: denial of service, rate-limit tuning, social engineering, and issues in third-party services we integrate with \(report those to the provider\)/);
+  assert.equal(job.note, "Trust note: @priviagents was created Oct 15, 2026 and has about 89 followers; PriviAgents/privi has 0 stars and was created Nov 22, 2026; the payout amount appears only in the X post.");
+  assert.match(job.paymentNote, /Payment comes from Privi, the program named in the source post/);
+  assert.match(job.paymentNote, /not from Clanksmith/i);
+  assert.equal(job.task.includes("PriviAgents/privi"), true);
+  const copy = [job.title, job.task, job.payLine, job.submit, job.scope, job.note, job.paymentNote, ...job.amountLines].join("\n");
+  assert.equal(copy.includes("\u2014"), false);
+  assert.equal(copy.includes("\u2013"), false);
+  assert.equal(seedJobs().filter((row) => row.sourcePostId === "2124689035625124043").length, 1);
+  assert.equal(renderJob(seedJobs()[0]).includes("<dt>Note</dt>"), false);
+
+  const response = await handleRequest(new Request("https://clanksmith.com/jobs/x2124689035625124043"), {});
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Privi bug bounty, round one/);
+  assert.match(html, /<strong>Privi<\/strong>/);
+  assert.match(html, /100 USDC per major bug/);
+  assert.match(html, /private GitHub security advisory on PriviAgents\/privi/);
+  assert.match(html, /Do not open a public issue/);
+  assert.match(html, /Use demo mode or your own account/);
+  assert.match(html, /Authentication, sessions and passkeys/);
+  assert.match(html, /Privacy Ring custody/);
+  assert.match(html, /priviagents\.com/);
+  assert.match(html, /Out of scope: denial of service/);
+  assert.match(html, /https:\/\/github\.com\/PriviAgents\/privi/);
+  assert.match(html, /https:\/\/x\.com\/priviagents\/status\/2124689035625124043/);
+  assert.match(html, /<dt>Note<\/dt><dd>Trust note: @priviagents was created Oct 15, 2026 and has about 89 followers/);
+  assert.match(html, /PriviAgents\/privi has 0 stars and was created Nov 22, 2026/);
+  assert.match(html, /the payout amount appears only in the X post/);
+  assert.match(html, /not from Clanksmith/i);
+  assert.equal(html.includes("\u2014"), false);
+  assert.equal(html.includes("\u2013"), false);
+  assert.equal(html.includes(">000<"), false);
+});
+
 test("the job page and the index show the payout and do not move money", () => {
   const [job] = seedJobs();
   const page = renderJob(job);

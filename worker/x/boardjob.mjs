@@ -7,6 +7,7 @@ export const AKTIONARIAT_POST = "Aktionariat's contract bounty pays 3 ETH for hi
 
 const SEEDED_AT = "2026-11-15T15:30:00.000Z";
 const PARALOOM_SEEDED_AT = "2026-11-22T02:29:37.872Z";
+const PRIVI_SEEDED_AT = "2026-11-23T02:18:35.563Z";
 
 export function boardJobId(sourcePostId) {
   const digits = String(sourcePostId || "").replace(/\D/g, "").slice(0, 20);
@@ -122,13 +123,42 @@ function paraloomStage1Job() {
   };
 }
 
+// Written out field by field. The post says "$100 in USDC", which the parser does not read, and SECURITY.md states no payout.
+function priviRoundOneJob() {
+  return {
+    id: "x2124689035625124043",
+    url: "https://clanksmith.com/jobs/x2124689035625124043",
+    sourcePostId: "2124689035625124043",
+    sourceUrl: "https://x.com/priviagents/status/2124689035625124043",
+    title: "Privi bug bounty, round one",
+    task: "Find a major bug in PriviAgents/privi. The code is open source.",
+    payerName: "Privi",
+    payerKind: "third-party",
+    side: "solver",
+    amounts: [
+      { amount: "100", currency: "USDC", tier: "major" },
+    ],
+    amountLines: [
+      "100 USDC per major bug",
+    ],
+    payLine: "100 USDC per major bug",
+    submit: "Submit a private GitHub security advisory on PriviAgents/privi. Do not open a public issue. Use demo mode or your own account.",
+    email: "",
+    repo: "https://github.com/PriviAgents/privi",
+    scope: "Authentication, sessions and passkeys. The ledger, deposits, withdrawals and Privacy Ring custody. Purchase approval (paying without the user's approval). Data exposure: balances, orders, shipping or traveller details. The production site at priviagents.com. Out of scope: denial of service, rate-limit tuning, social engineering, and issues in third-party services we integrate with (report those to the provider). See SECURITY.md.",
+    note: "Trust note: @priviagents was created Oct 15, 2026 and has about 89 followers; PriviAgents/privi has 0 stars and was created Nov 22, 2026; the payout amount appears only in the X post.",
+    paymentNote: paymentNote("Privi", "third-party"),
+    createdAt: PRIVI_SEEDED_AT,
+  };
+}
+
 export function seedJobs() {
   const brief = readBrief({
     id: "2121989097954697556",
     username: "W3B_AI_SR",
     text: AKTIONARIAT_POST,
   });
-  return [boardJobFromBrief(brief, SEEDED_AT), paraloomStage1Job()];
+  return [boardJobFromBrief(brief, SEEDED_AT), paraloomStage1Job(), priviRoundOneJob()];
 }
 
 export async function collectJobs(inbox) {
@@ -310,6 +340,7 @@ export function renderJob(job, options = {}) {
   const repo = job.repo ? `<a class="btn" href="${esc(job.repo)}">Repository</a>` : "";
   const source = job.sourceUrl ? `<a class="btn" href="${esc(job.sourceUrl)}">Source post</a>` : "";
   const scope = job.scope ? `<div class="row"><dt>Scope</dt><dd>${esc(job.scope)}</dd></div>` : "";
+  const note = job.note ? `<div class="row"><dt>Note</dt><dd>${esc(job.note)}</dd></div>\n` : "";
   return shell({
     title: job.title,
     description: job.paymentNote,
@@ -324,7 +355,7 @@ export function renderJob(job, options = {}) {
 <div class="row"><dt>Payout</dt><dd>${amounts}</dd></div>
 <div class="row"><dt>Submit</dt><dd>${esc(job.submit)}</dd></div>
 ${scope}
-<div class="row"><dt>Source</dt><dd>${job.sourceUrl ? `<a href="${esc(job.sourceUrl)}">${esc(job.sourceUrl)}</a>` : "The source post."}</dd></div>
+${note}<div class="row"><dt>Source</dt><dd>${job.sourceUrl ? `<a href="${esc(job.sourceUrl)}">${esc(job.sourceUrl)}</a>` : "The source post."}</dd></div>
 </dl>
 <div class="actions">${source}${repo}</div>
 ${reportForm(job, options.turnstileSiteKey || "")}
